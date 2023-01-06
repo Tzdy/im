@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            display: flow-root;
+        }
+
+        #App {
+            max-width: 1024px;
+            height: 100%;
+            margin: 0 auto;
+            border: 1px solid black;
+            box-sizing: border-box;
+            display: flex;
+        }
+
+        .sidebar {
+            flex: 0 0 250px;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            border-right: 1px solid black;
+            box-sizing: border-box;
+        }
+
+        .main {
+            flex: 1 1 auto;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .user-info {
+            display: flex;
+            white-space: nowrap;
+        }
+
+        .edit-info {
+            font-size: 16px;
+            width: 100%;
+            flex: 0 1 140px;
+            box-sizing: border-box;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            border-bottom: 1px solid black;
+        }
+
+        .edit-info:focus-visible {
+            outline: none;
+        }
+
+        .chat-box {
+            width: 100%;
+            display: flex;
+            margin-bottom: 48px;
+        }
+
+        .name {
+            flex: 0 0 auto;
+            max-width: 64px;
+        }
+
+        .content {
+            flex: 0 1 100%;
+            border: 1px solid black;
+            box-sizing: border-box;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="App">
+        <div class="sidebar">
+            <div class="user-info">
+                <span>名称：</span>
+                <span v-show="!isInfoEdit">{{ info.nickname }}</span>
+                <input class="edit-info" v-show="isInfoEdit" v-model="editInfo.nickname" type="text">
+                <button style="margin-left: 16px;" @click="onToggleEdit">
+                    <span v-show="!isInfoEdit">编辑</span>
+                    <span v-show="isInfoEdit">提交</span>
+                </button>
+            </div>
+            <div style="margin: 16px 0;"></div>
+            <div @click="onSelect(item.id)" :style="selectStyle(item.id)" style="margin-top: 4px; cursor:pointer;"
+                v-for="item in friendList" :key="item.id">
+                <span>{{ item.nickname }}</span>
+                <span v-show="item.id === info.id">(我自己)</span>
+                <span style="color: green;" v-show="item.isOnline">在线</span>
+                <span style="color: gray;" v-show="!item.isOnline">离线</span>
+            </div>
+        </div>
+        <div v-if="!isSelectChat" class="main">
+            <h1>Welcome</h1>
+        </div>
+        <div v-else class="main">
+            <div :style="{direction: item.user_id !== info.id ? 'rtl' : 'ltr', minHeight: '64px'}"
+                v-for="item in chatListComputed" :key="item.id" class="chat-box">
+                <div class="name">{{ item.nickname }}</div>
+                <div :style="{direction: 'ltr', [item.user_id !== info.id ? 'marginRight' : 'marginLeft']: '32px', [item.user_id !== info.id ? 'marginLeft' : 'marginRight']: '90px' }"
+                    class="content">{{ item.content }}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    const vm = new Vue({
+        el: '#App',
+        data() {
+            return {
+                isInfoEdit: false,
+                info: {
+                    id: 3,
+                    nickname: "岳冬阳"
+                },
+                editInfo: {
+                    nickname: ""
+                },
+                friendList: [
+                    {
+                        nickname: '路人甲',
+                        id: 1,
+                        isOnline: false,
+                    },
+                    {
+                        nickname: '路人乙',
+                        id: 2,
+                        isOnline: true,
+                    },
+                    {
+                        nickname: '岳冬阳',
+                        id: 3,
+                        isOnline: true,
+                    }
+                ],
+                chatList: [
+                    {
+                        "id": 1,
+                        "user_id": 3,
+                        "friend_id": 2,
+                        "content": "你好啊",
+                        "created_time": "2023-01-06T12:48:31.000Z"
+                    },
+                    {
+                        "id": 2,
+                        "user_id": 3,
+                        "friend_id": 2,
+                        "content": "在不在？？？？？",
+                        "created_time": "2023-01-06T12:48:31.000Z"
+                    },
+                    {
+                        "id": 3,
+                        "user_id": 2,
+                        "friend_id": 3,
+                        "content": "有毒吧？？？",
+                        "created_time": "2023-01-06T12:48:31.000Z"
+                    }
+                ],
+                selectUserId: null
+            }
+        },
+        computed: {
+            isSelectChat() {
+                return this.selectUserId !== null
+            },
+
+            nicknameMap() {
+                return this.friendList.reduce((a, b) => {
+                    a[b.id] = b.nickname
+                    return a
+                }, {})
+            },
+
+            chatListComputed() {
+                return this.chatList.map(item => ({
+                    nickname: this.nicknameMap[item.user_id],
+                    ...item,
+                }))
+            }
+        },
+        methods: {
+            onToggleEdit() {
+                this.isInfoEdit = !this.isInfoEdit
+                this.editInfo.nickname = this.info.nickname
+            },
+            selectStyle(id) {
+                if (this.selectUserId === id) {
+                    return {
+                        backgroundColor: 'rgba(208,215,222,.32)'
+                    }
+                }
+                return {}
+            },
+            onSelect(id) {
+                console.log(id)
+                this.selectUserId = id
+            }
+        }
+    })
+
+    // const ws = new WebSocket('ws://localhost:20001/ws')
+    // ws.onopen = function () {
+    //     ws.send(JSON.stringify({
+    //         type: 0,
+    //         data: {
+    //             token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXlsb2FkIjp7ImlkIjoxfSwiZXhwIjoxNjcyOTMxNzEzMjc5LCJpYXQiOjE2NzI5MzE3MTN9.ku3FksuhMnD-WdZtKlL0-1_t1LisB8t1roW9TKKn8hM'
+    //         }
+    //     }))
+    // }
+</script>
+
+</html>

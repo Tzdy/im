@@ -13,3 +13,7 @@ export function findOneUserById(userId) {
 export function createOneUser(username, password) {
     return query(`INSERT INTO ${TABLE_NAME}(username, password) VALUES(?, ?)`, [username, password])
 }
+
+export function updateOneUserOnline(userId, isOnline) {
+    return query(`UPDATE ${TABLE_NAME} SET is_online=? WHERE id=? LIMIT 1`, [isOnline, userId])
+}

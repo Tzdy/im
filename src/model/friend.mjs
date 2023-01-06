@@ -7,5 +7,5 @@ export function createDirectOneFriend(myselfId, otherId) {
 }
 
 export function findFriend(userId) {
-    return query(`SELECT u.id,u.username FROM ${TABLE_NAME} uf LEFT JOIN user u ON uf.friend_id=u.id WHERE uf.user_id=?`, [userId])
+    return query(`SELECT u.id,u.username,u.is_online FROM ${TABLE_NAME} uf LEFT JOIN user u ON uf.friend_id=u.id WHERE uf.user_id=?`, [userId])
 }
