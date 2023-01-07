@@ -5,8 +5,8 @@ use im_server;
 CREATE TABLE user(
     id INTEGER AUTO_INCREMENT,
     username VARCHAR(32) NOT NULL,
+    nickname VARCHAR(32) NOT NULL,
     password VARCHAR(32) NOT NULL,
-    is_online INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

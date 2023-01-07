@@ -11,9 +11,10 @@ export function findOneUserById(userId) {
 }
 
 export function createOneUser(username, password) {
-    return query(`INSERT INTO ${TABLE_NAME}(username, password) VALUES(?, ?)`, [username, password])
+    return query(`INSERT INTO ${TABLE_NAME}(username, password, nickname) VALUES(?, ?)`, [username, password, username])
 }
 
-export function updateOneUserOnline(userId, isOnline) {
-    return query(`UPDATE ${TABLE_NAME} SET is_online=? WHERE id=? LIMIT 1`, [isOnline, userId])
+
+export function findUserNotUserId(userId) {
+    return query(`SELECT id,username,nickname WHERE id!=? FROM ${TABLE_NAME}`, [userId])
 }

@@ -1,18 +1,15 @@
 import { WebSocketServer } from 'ws'
-import { updateOneUserOnline } from '../model/user.mjs'
 import { verify } from '../util/jwt.mjs'
 
 export const TYPE = {
     AUTHORIZATION: 0
 }
 
-export const STATUS = {
-    ONLINE: 1,
-    OFFLINE: 0
-}
+export let wss = null
 
 export function wsInit(server) {
-    const wss = new WebSocketServer({
+
+    wss = new WebSocketServer({
         path: '/ws',
         server
     })
@@ -49,21 +46,14 @@ export function wsInit(server) {
                     return;
                 }
                 const { id: userId } = jwtData.payload
-                await updateOneUserOnline(userId, STATUS.ONLINE)
                 ws.userId = userId
             }
         });
-
-        ws.on('close', async () => {
-            console.log(ws.userId)
-            await updateOneUserOnline(ws.userId, STATUS.OFFLINE)
-        })
     })
 
     const interval = setInterval(function ping() {
         wss.clients.forEach(function each(ws) {
             if (ws.isAlive === false) {
-                updateOneUserOnline(userId, STATUS.OFFLINE)
                 return ws.terminate()
             }
             ws.isAlive = false;

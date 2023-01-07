@@ -1,5 +1,5 @@
 import { HttpException } from "@tsdy/express-plugin-exception";
-import { createOneUser, findOneUserByUsername, findOneUserById } from "../model/user.mjs";
+import { createOneUser, findOneUserByUsername, findOneUserById, findUserNotUserId } from "../model/user.mjs";
 import { HttpOKException } from "../util/exception.mjs";
 import { sign } from "../util/jwt.mjs";
 
@@ -42,6 +42,20 @@ export async function info(userId) {
         code: 20000,
         data: {
             info: (await findOneUserById(userId))[0]
+        }
+    }
+}
+
+export async function listAllUserNotMyself(userId) {
+    let list = await findUserNotUserId(userId)
+    list = list.map(user => ({
+        is_online: !!wss.clients.find(ws => ws.userId === user.id),
+        ...user,
+    }))
+    return {
+        code: 20000,
+        data: {
+            userList: list
         }
     }
 }

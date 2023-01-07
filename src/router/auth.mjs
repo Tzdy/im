@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { asyncException } from '@tsdy/express-plugin-exception'
-import { login, register, info } from '../service/auth.mjs'
+import { login, register, info, listAllUserNotMyself } from '../service/auth.mjs'
 import { TokenMiddleWare } from '../middleware/jwt.mjs'
 const router = Router()
 
@@ -17,6 +17,11 @@ router.post('/register', asyncException(async (req, res) => {
 router.get('/info', TokenMiddleWare, asyncException(async (req, res) => {
     const userId = req.user.id
     res.send(await info(userId))
+}))
+
+router.get('/user/all', TokenMiddleWare, asyncException(async (req, res) => {
+    const userId = req.user.id
+    res.send(await listAllUserNotMyself(userId))
 }))
 
 export default router
