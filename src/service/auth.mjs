@@ -1,6 +1,7 @@
 import { HttpException } from "@tsdy/express-plugin-exception";
-import { createOneUser, findOneUserByUsername, findOneUserById, findUserNotUserId } from "../model/user.mjs";
+import { createOneUser, findOneUserByUsername, findOneUserById, findUserNotUserId, updateOneById } from "../model/user.mjs";
 import { HttpOKException } from "../util/exception.mjs";
+import { wss } from "../ws/index.mjs";
 import { sign } from "../util/jwt.mjs";
 
 export async function login(username, password) {
@@ -23,9 +24,9 @@ export async function login(username, password) {
     }
 }
 
-export async function register(username, password) {
+export async function register(nickname, username, password) {
     try {
-        await createOneUser(username, password)
+        await createOneUser(nickname, username, password)
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') {
             throw new HttpOKException(10001, '用户名重复')
@@ -46,12 +47,24 @@ export async function info(userId) {
     }
 }
 
+export async function putInfo(userId, nickname) {
+    await updateOneById(userId, nickname)
+    return {
+        code: 20000
+    }
+}
+
 export async function listAllUserNotMyself(userId) {
     let list = await findUserNotUserId(userId)
-    list = list.map(user => ({
-        is_online: !!wss.clients.find(ws => ws.userId === user.id),
-        ...user,
-    }))
+    const clients = Array.from(wss.clients)
+    list = list.map(user => {
+        const { id, ...item } = user
+        return {
+            isOnline: !!clients.find(ws => ws.userId === user.id),
+            userId: user.id,
+            ...item,
+        }
+    })
     return {
         code: 20000,
         data: {

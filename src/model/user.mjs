@@ -7,14 +7,23 @@ export function findOneUserByUsername(username) {
 }
 
 export function findOneUserById(userId) {
-    return query(`SELECT id,username FROM ${TABLE_NAME} WHERE id=? LIMIT 1`, [userId])
+    return query(`SELECT id,username,nickname FROM ${TABLE_NAME} WHERE id=? LIMIT 1`, [userId])
 }
 
-export function createOneUser(username, password) {
-    return query(`INSERT INTO ${TABLE_NAME}(username, password, nickname) VALUES(?, ?)`, [username, password, username])
+export function createOneUser(nickname, username, password) {
+    return query(`INSERT INTO ${TABLE_NAME}(username, password, nickname) VALUES(?, ?, ?)`, [username, password, nickname])
 }
 
 
 export function findUserNotUserId(userId) {
-    return query(`SELECT id,username,nickname WHERE id!=? FROM ${TABLE_NAME}`, [userId])
+    return query(`SELECT id,username,nickname FROM ${TABLE_NAME} WHERE id!=?`, [userId])
+}
+
+export function updateOneById(userId, nickname) {
+    const hasUpdate = !!(nickname)
+    if (!hasUpdate) {
+        return Promise.resolve({})
+    }
+    const map = { nickname }
+    return query(`UPDATE ${TABLE_NAME} SET ${Object.keys(map).map(key => `${key}=?`).join(',')} WHERE id=?`, [...Object.values(map), userId])
 }

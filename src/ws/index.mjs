@@ -2,9 +2,19 @@ import { WebSocketServer } from 'ws'
 import { verify } from '../util/jwt.mjs'
 
 export const TYPE = {
-    AUTHORIZATION: 0
+    AUTHORIZATION: 0,
+    CHAT: 1,
+    NOTIFY_STATE_CHANGE: 2, // 上下线通知
 }
 
+export const STATUS = {
+    ONLINE: 0,
+    OFFLINE: 1,
+}
+
+/**
+ * @type { WebSocketServer | null }
+ */
 export let wss = null
 
 export function wsInit(server) {
@@ -47,8 +57,35 @@ export function wsInit(server) {
                 }
                 const { id: userId } = jwtData.payload
                 ws.userId = userId
+
+                Array.from(wss.clients).forEach(item => {
+                    if (item.userId !== userId) {
+                        item.send(JSON.stringify({
+                            type: TYPE.NOTIFY_STATE_CHANGE,
+                            data: {
+                                status: STATUS.ONLINE,
+                                userId,
+                            },
+                        }))
+                    }
+                })
             }
         });
+
+        ws.on('close', () => {
+            Array.from(wss.clients).forEach(item => {
+                if (item.userId !== ws.userId) {
+                    item.send(JSON.stringify({
+                        type: TYPE.NOTIFY_STATE_CHANGE,
+                        data: {
+                            status: STATUS.OFFLINE,
+                            userId: ws.userId,
+                        },
+                    }))
+                }
+            })
+        })
+
     })
 
     const interval = setInterval(function ping() {

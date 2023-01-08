@@ -21,7 +21,7 @@ CREATE TABLE user_friend_chat(
     id INTEGER AUTO_INCREMENT,
     user_id INTEGER NOT NULL,
     friend_id INTEGER NOT NULL,
-    content VARCHAR(256) NOT NULL,
+    content TEXT NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

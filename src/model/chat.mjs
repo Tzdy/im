@@ -7,6 +7,6 @@ export function createOneChat(userId, friendId, content) {
 }
 
 export function findChatByUserId(userId, friendId, page, pageSize) {
-    return query(`SELECT id, user_id, friend_id, content, created_time FROM ${TABLE_NAME} WHERE id <= (SELECT id FROM ${TABLE_NAME} WHERE (user_id=? AND friend_id=?) OR (user_id=? AND friend_id=?) ORDER BY id DESC LIMIT ?,1) ORDER BY id DESC LIMIT ?`, [userId, friendId, friendId, userId, (page - 1) * pageSize, pageSize])
+    return query(`SELECT id, user_id, friend_id, content, created_time FROM ${TABLE_NAME} WHERE id <= (SELECT id FROM ${TABLE_NAME} WHERE (user_id=? AND friend_id=?) OR (user_id=? AND friend_id=?) ORDER BY id DESC LIMIT ?,1) AND ((user_id=? AND friend_id=?) OR (user_id=? AND friend_id=?)) ORDER BY id DESC LIMIT ?`, [userId, friendId, friendId, userId, (page - 1) * pageSize, userId, friendId, friendId, userId, pageSize])
 }
 
