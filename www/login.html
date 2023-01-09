@@ -110,6 +110,9 @@
                                     })
                             }
                         })
+                        .catch(response => {
+                            errMsg.value = response.message
+                        })
                 }
             }
 

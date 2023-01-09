@@ -17,6 +17,12 @@ export default defineComponent({
 
         const friendList = ref([])
 
+        const friendListComputed = computed(() => {
+            const onlineList = friendList.value.filter(item => item.isOnline)
+            const offlineList = friendList.value.filter(item => !item.isOnline)
+            return onlineList.concat(offlineList)
+        })
+
         function fetchFriendList() {
             return getAllUserNotMyself()
                 .then(response => {
@@ -49,7 +55,6 @@ export default defineComponent({
         eventBus.$on(EVENT.NOTIFY_STATE_CHANGE, response => {
             const { userId, status } = response.data
             const friend = friendList.value.find(item => item.userId === userId)
-            console.log(friend)
             if (friend) {
                 friend.isOnline = status === STATUS.ONLINE ? true : false
             }
@@ -172,6 +177,7 @@ export default defineComponent({
             editInfo,
             onEditSubmit,
             friendList,
+            friendListComputed,
             nicknameMap,
             chatListComputed,
             selectUserId,
