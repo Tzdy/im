@@ -4,6 +4,7 @@ import { exit, userStore } from '../store/user.js'
 import { chatStore, getMessage, sendMessage } from '../store/chat.js'
 import { openWs, eventBus, STATUS, EVENT } from '../ws.js'
 import { goLogin } from '../router.js'
+import { notify } from '../util/notify.js'
 
 export default defineComponent({
     template: '#index-main',
@@ -17,7 +18,7 @@ export default defineComponent({
         const friendList = ref([])
 
         function fetchFriendList() {
-            getAllUserNotMyself()
+            return getAllUserNotMyself()
                 .then(response => {
                     if (response.code === 20000) {
                         friendList.value = response.data.userList
@@ -27,9 +28,9 @@ export default defineComponent({
 
         fetchFriendList()
 
-        eventBus.$on(EVENT.CHAT, function (response) {
+        eventBus.$on(EVENT.CHAT, async function (response) {
             const data = response.data
-            // 这是对方发送的信息，user_id是我自己friend的id
+            // 这是对方发送的信息，user_id是我friend的id
             const userId = data.user_id
             const friendId = data.friend_id
             if (response.code === 20000 && friendId === userStore.userInfo.userId) {
@@ -37,9 +38,11 @@ export default defineComponent({
                 if (!chatStore.userChat[userId]) {
                     set(chatStore.userChat, userId, [])
                     // 刷新一下好友列表
-                    fetchFriendList()
+                    await fetchFriendList()
                 }
                 chatStore.userChat[userId].push(data)
+                const friendNickname = (friendList.value.find(user => user.userId === userId) || { nickname: '未命名' }).nickname
+                notify(`${friendNickname}，发送消息。`)
             }
         })
 

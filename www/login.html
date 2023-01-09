@@ -89,6 +89,7 @@
     import { goHome, goRegister } from './router.js'
     import { login } from './store/user.js'
     import { paramObj } from './util/paramObj.js'
+    import { notifyInit } from './util/notify.js'
 
     new Vue({
         el: '#App',
@@ -103,7 +104,10 @@
                     login(username.value, password.value)
                         .then(response => {
                             if (response.code === 20000) {
-                                goHome()
+                                notifyInit()
+                                    .then(() => {
+                                        goHome()
+                                    })
                             }
                         })
                 }
