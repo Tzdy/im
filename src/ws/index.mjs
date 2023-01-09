@@ -27,9 +27,16 @@ export function wsInit(server) {
         this.isAlive = true;
     }
 
+    wss.on('error', err => {
+        console.log('wss', err)
+    })
+
     wss.on('connection', function connection(ws) {
         ws.isAlive = true;
         ws.on('pong', heartbeat);
+        ws.on('error', err => {
+            console.log(ws.userId, err)
+        })
         ws.on('message', async function message(msg) {
             msg = msg.toString('utf-8')
             let json = {
