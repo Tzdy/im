@@ -1,10 +1,14 @@
 import { ref, computed, reactive, nextTick, defineComponent, set } from '../public/js/vue.esm.js'
+import { join } from '../util/path.js'
 import { getAllUserNotMyself, putInfo } from '../api/auth.js'
 import { exit, userStore } from '../store/user.js'
-import { chatStore, getMessage, sendMessage } from '../store/chat.js'
+import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage } from '../store/chat.js'
 import { openWs, eventBus, STATUS, EVENT } from '../ws.js'
 import { goLogin } from '../router.js'
 import { notify } from '../util/notify.js'
+import { postChatUpload } from '../api/chat.js'
+import { BASE_URL } from '../config.js'
+import { getToken } from '../util/storage.js'
 
 export default defineComponent({
     template: '#index-main',
@@ -171,6 +175,23 @@ export default defineComponent({
         }
 
 
+        /**
+         * 
+         * @param {chatType} type 
+         */
+        function onUploadFile(type) {
+            const input = document.createElement('input')
+            input.onchange = function () {
+                sendUploadMessage(selectUserId.value, input.files[0], type)
+            }
+            input.setAttribute('type', 'file')
+            input.click()
+        }
+
+        function generateFileUrl(chatId, type) {
+            return join(BASE_URL, `/chat/upload?token=${getToken()}&friendId=${selectUserId.value}&chatId=${chatId}&type=${type}`)
+        }
+
         return {
 
             info,
@@ -193,6 +214,9 @@ export default defineComponent({
             chatBoxElement,
             onSendMessage,
             onResetMessage,
+            onUploadFile,
+            chatType,
+            generateFileUrl,
 
             onExit,
         }

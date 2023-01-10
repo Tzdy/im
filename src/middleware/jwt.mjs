@@ -21,6 +21,7 @@ export function TokenMiddleWare(
             const { id } = json.payload
             req.user = {
                 id,
+                token,
             }
             return next()
         }

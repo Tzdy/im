@@ -191,17 +191,29 @@
                         <div class="name">{{ item.nickname }}</div>
                         <div :style="{direction: 'ltr', [item.user_id !== info.userId ? 'marginLeft' : 'marginRight']: '32px', [item.user_id !== info.userId ? 'marginRight' : 'marginLeft']: '90px' }"
                             class="content p-2 rounded" :class="contentClass(item.user_id)">
-                            {{ item.content }}
+                            <span v-if="item.type === chatType.TEXT">{{ item.content }}</span>
+                            <a v-else-if="item.type === chatType.IMAGE" :href="generateFileUrl(item.id, item.type)"
+                                target="_blank">
+                                <img style="max-width: 300px;" :src="generateFileUrl(item.id, item.type)" alt="">
+                            </a>
+                            <div v-else>
+                                <span>{{ item.content }}</span>
+                                <a :href="generateFileUrl(item.id, item.type)" target="_blank">
+                                    <span>点击下载</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="edit-box border-top border-secondary-subtle">
                     <div class="d-flex align-items-center p-2 border-bottom border-secondary-subtle">
-                        <svg style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;"
+                        <svg @click="onUploadFile(chatType.IMAGE)"
+                            style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;"
                             class="flex-shrink-0 ms-2" role="img">
                             <use xlink:href="#icon-image" />
                         </svg>
-                        <svg style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;"
+                        <svg @click="onUploadFile(chatType.FILE)"
+                            style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;"
                             class="flex-shrink-0 ms-4" role="img">
                             <use xlink:href="#icon-file" />
                         </svg>

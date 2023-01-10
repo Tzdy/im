@@ -1,7 +1,6 @@
+import { WS_URL } from "./config.js"
 import Vue from "./public/js/vue.esm.js"
 import { getToken } from "./util/storage.js"
-
-const WS_URL = 'ws://localhost:20001/ws'
 
 /**
  * @type { WebSocket | null }

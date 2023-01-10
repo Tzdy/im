@@ -1,8 +1,12 @@
+import { BASE_URL } from '../config.js';
 import axios from '../public/js/axios.esm.js'
+import { goLogin } from '../router.js';
 import { getToken } from './storage.js';
 
+
+
 const instance = axios.create({
-    baseURL: 'http://localhost:20001'
+    baseURL: BASE_URL
 })
 
 // Add a request interceptor
@@ -21,6 +25,9 @@ instance.interceptors.response.use(function (response) {
     // Do something with response data
     return response.data;
 }, function (error) {
+    if (error.response.status === 401) {
+        return goLogin(error.response.data.message)
+    }
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error
     return Promise.reject(error.response.data)
