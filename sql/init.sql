@@ -21,7 +21,18 @@ CREATE TABLE user_friend_chat(
     id INTEGER AUTO_INCREMENT,
     user_id INTEGER NOT NULL,
     friend_id INTEGER NOT NULL,
+    -- 0 文本, 1 图片, 2 文件
+    type INTEGER DEFAULT 0,
     content TEXT NOT NULL,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ( `id` )
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE user_friend_upload(
+    id CHAR(36) NOT NULL,
+    chat_id INTEGER,
+    filename VARCHAR(64) NOT NULL,
+    mimetype VARCHAR(32) NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
