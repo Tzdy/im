@@ -52,7 +52,7 @@ router.post('/chat/upload', TokenMiddleWare, upload.fields([{ name: 'file' }, { 
         const friendId = Number(req.body.friendId)
         const uuid = req.uuid
         const type = Number(req.body.type)
-        res.send(await postChatUpload(userId, friendId, uuid, file.originalname, file.mimetype, type))
+        res.send(await postChatUpload(userId, friendId, uuid, Buffer.from(file.originalname, 'latin1').toString('utf-8'), file.mimetype, type))
     } else {
         res.send({
             code: 20003,

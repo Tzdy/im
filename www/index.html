@@ -245,7 +245,7 @@
 <script type="module">
     import Vue from './public/js/vue.esm.js'
     import { useAuthMiddleware } from './middleware/auth.js'
-    import IndexMain from './components/IndexMain.js'
+    import IndexMain from './views/IndexMain.js'
 
     new Vue({
         el: '#App',
@@ -259,16 +259,6 @@
             }
         },
     })
-
-    // const ws = new WebSocket('ws://localhost:20001/ws')
-    // ws.onopen = function () {
-    //     ws.send(JSON.stringify({
-    //         type: 0,
-    //         data: {
-    //             token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXlsb2FkIjp7ImlkIjoxfSwiZXhwIjoxNjcyOTMxNzEzMjc5LCJpYXQiOjE2NzI5MzE3MTN9.ku3FksuhMnD-WdZtKlL0-1_t1LisB8t1roW9TKKn8hM'
-    //         }
-    //     }))
-    // }
 </script>
 
 </html>
