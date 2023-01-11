@@ -1,10 +1,28 @@
-import { reactive, set } from '../public/js/vue.esm.js'
+import { reactive, set, computed } from '../public/js/vue.esm.js'
 import { postChat, getChat, postChatUpload } from '../api/chat.js'
+import { getAllUserNotMyself } from '../api/auth.js'
 import { userStore } from './user.js'
 
 export const chatStore = reactive({
+    friendList: [],
     userChat: {}
 })
+
+const nicknameMap = computed(() => {
+    return chatStore.friendList.concat(userStore.userInfo).reduce((a, b) => {
+        a[b.userId] = b.nickname
+        return a
+    }, {})
+})
+
+export function fetchFriendList() {
+    return getAllUserNotMyself()
+        .then(response => {
+            if (response.code === 20000) {
+                chatStore.friendList = response.data.userList
+            }
+        })
+}
 
 export function getMessage(friendId, page, pageSize) {
     if (chatStore.userChat[friendId]) {
@@ -13,7 +31,10 @@ export function getMessage(friendId, page, pageSize) {
         return getChat(friendId, page, pageSize)
             .then(response => {
                 if (response.code === 20000) {
-                    set(chatStore.userChat, friendId, response.data.list)
+                    set(chatStore.userChat, friendId, response.data.list.map(item => ({
+                        nickname: nicknameMap.value[item.userId],
+                        ...item
+                    })))
                 }
                 return Promise.resolve(chatStore.userChat[friendId])
             })
@@ -43,17 +64,29 @@ export function sendMessage(friendId, content, type = chatType.TEXT) {
 }
 
 export function sendUploadMessage(friendId, file, type = chatType.IMAGE) {
-    return postChatUpload(type, friendId, file)
+    const item = {
+        id: undefined,
+        user_id: userStore.userInfo.userId,
+        friend_id: friendId,
+        content: file.name,
+        type,
+        "created_time": Date.now(),
+        loaded: 0
+    }
+    chatStore.userChat[friendId].push(item)
+    function loadCallback(e) {
+        item.loaded = `${parseInt((e.loaded / e.total) * 100, 0)}%`
+    }
+    return postChatUpload(type, friendId, file, loadCallback)
         .then(response => {
             if (response.code === 20000) {
-                chatStore.userChat[friendId].push({
-                    id: response.data.chatId,
-                    user_id: userStore.userInfo.userId,
-                    friend_id: friendId,
-                    content: '',
-                    type,
-                    "created_time": Date.now(),
-                })
+                item.id = response.data.chatId
+                // 上传图片的时候可以继续聊天
+                if (chatStore.userChat[friendId][chatStore.userChat[friendId].length - 1].id !== item.id) {
+                    const oldIndex = chatStore.userChat[friendId].findIndex(it => it.id === item.id)
+                    chatStore.userChat[friendId].splice(oldIndex, 1)
+                    chatStore.userChat[friendId].push(item)
+                }
             }
         })
 }

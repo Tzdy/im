@@ -72,7 +72,7 @@ router.get('/chat/upload', asyncException(async (req, res) => {
         const { id, mimetype, filename } = info
         res.setHeader('Content-Type', type === chatType.IMAGE ? mimetype : 'application/octet-stream')
         if (type === chatType.FILE) {
-            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+            res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`)
         }
         res.sendFile(join(process.env.UPLOAD_PATH, id))
     }

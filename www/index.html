@@ -127,6 +127,12 @@
             <path
                 d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z" />
         </symbol>
+        <symbol id="icon-upload" viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+                d="M4.406 1.342A5.53 5.53 0 0 1 8 0c2.69 0 4.923 2 5.166 4.579C14.758 4.804 16 6.137 16 7.773 16 9.569 14.502 11 12.687 11H10a.5.5 0 0 1 0-1h2.688C13.979 10 15 8.988 15 7.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 2.825 10.328 1 8 1a4.53 4.53 0 0 0-2.941 1.1c-.757.652-1.153 1.438-1.153 2.055v.448l-.445.049C2.064 4.805 1 5.952 1 7.318 1 8.785 2.23 10 3.781 10H6a.5.5 0 0 1 0 1H3.781C1.708 11 0 9.366 0 7.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383z" />
+            <path fill-rule="evenodd"
+                d="M7.646 4.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V14.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3z" />
+        </symbol>
     </svg>
 </head>
 
@@ -187,20 +193,39 @@
             <div v-else class="main">
                 <div ref="chatBoxElement" :style="{scrollBehavior: scrollSmooth ? 'smooth' : 'auto'}" class="chat-box">
                     <div :style="{direction: item.user_id !== info.userId ? 'ltr' : 'rtl', minHeight: '64px'}"
-                        v-for="item in chatListComputed" :key="item.id" class="p-3 mb-4 d-flex">
+                        v-for="item in chatStore.userChat[selectUserId]" :key="item.id" class="p-3 mb-4 d-flex">
                         <div class="name">{{ item.nickname }}</div>
                         <div :style="{direction: 'ltr', [item.user_id !== info.userId ? 'marginLeft' : 'marginRight']: '32px', [item.user_id !== info.userId ? 'marginRight' : 'marginLeft']: '90px' }"
-                            class="content p-2 rounded" :class="contentClass(item.user_id)">
+                            class="content p-2 rounded" :class="contentClass(item.user_id, item.type)">
                             <span v-if="item.type === chatType.TEXT">{{ item.content }}</span>
-                            <a v-else-if="item.type === chatType.IMAGE" :href="generateFileUrl(item.id, item.type)"
-                                target="_blank">
-                                <img style="max-width: 300px;" :src="generateFileUrl(item.id, item.type)" alt="">
+                            <a v-else-if="item.type === chatType.IMAGE && item.id"
+                                :href="generateFileUrl(item.id, item.type)" target="_blank">
+                                <div v-show="!item.__load" class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <!-- __load是一个临时变量 -->
+                                <img v-show="item.__load" @load="$set(item, '__load', true)" style="max-width: 300px;"
+                                    :src="generateFileUrl(item.id, item.type)" alt="">
                             </a>
+                            <div v-else-if="item.type === chatType.FILE" style="width: 282px;" class="p-2">
+                                <div>{{ item.content }}</div>
+                                <div v-if="item.user_id === info.userId && !item.id">
+                                    <div class="progress" role="progressbar">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                            :style="{ width: item.loaded }"></div>
+                                    </div>
+                                </div>
+                                <div v-else-if="item.id" class="text-end">
+                                    <a style="font-size: 12px;" :href="generateFileUrl(item.id, item.type)"
+                                        target="_blank">
+                                        <span>点击下载</span>
+                                    </a>
+                                </div>
+                            </div>
                             <div v-else>
-                                <span>{{ item.content }}</span>
-                                <a :href="generateFileUrl(item.id, item.type)" target="_blank">
-                                    <span>点击下载</span>
-                                </a>
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -226,10 +251,17 @@
                         <button @click="onSendMessage" type="button"
                             class="btn btn-outline-primary me-0 ms-2">发送</button>
                     </div>
-                    <div class="form-floating flex-grow-0 flex-fill h-100">
-                        <textarea @keydown.enter.prevent="onSendMessage" v-model="content" class="form-control h-100"
+                    <div @dragleave="onDragleave" @dragover.prevent @drop.prevent.stop="onDrop($event)"
+                        class="form-floating flex-grow-0 flex-fill h-100 d-flex">
+                        <textarea @dragenter="onDragenter" @dragleave.stop v-show="!isDragenter"
+                            @keydown.enter.prevent="onSendMessage" v-model="content" class="form-control h-100"
                             placeholder="Leave a comment here" id="floatingTextarea"></textarea>
-                        <label for="floatingTextarea">Input...</label>
+                        <label v-show="!isDragenter" for="floatingTextarea">Input...</label>
+                        <svg @dragleave.stop @dragenter="onDragenter" v-show="isDragenter"
+                            style="width: 32px; height: 32px; fill:currentColor; cursor: pointer;"
+                            class="flex-shrink-0 m-auto" role="img">
+                            <use xlink:href="#icon-upload" />
+                        </svg>
                     </div>
                 </div>
             </div>

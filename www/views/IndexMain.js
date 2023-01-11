@@ -1,12 +1,11 @@
 import { ref, computed, reactive, nextTick, defineComponent, set } from '../public/js/vue.esm.js'
 import { join } from '../util/path.js'
-import { getAllUserNotMyself, putInfo } from '../api/auth.js'
+import { putInfo } from '../api/auth.js'
 import { exit, userStore } from '../store/user.js'
-import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage } from '../store/chat.js'
+import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage, fetchFriendList } from '../store/chat.js'
 import { openWs, eventBus, STATUS, EVENT } from '../ws.js'
 import { goLogin } from '../router.js'
 import { notify } from '../util/notify.js'
-import { postChatUpload } from '../api/chat.js'
 import { BASE_URL } from '../config.js'
 import { getToken } from '../util/storage.js'
 
@@ -19,7 +18,7 @@ export default defineComponent({
             nickname: ''
         })
 
-        const friendList = ref([])
+        const friendList = computed(() => chatStore.friendList)
 
         const friendListComputed = computed(() => {
             const onlineList = friendList.value.filter(item => item.isOnline)
@@ -27,14 +26,6 @@ export default defineComponent({
             return onlineList.concat(offlineList)
         })
 
-        function fetchFriendList() {
-            return getAllUserNotMyself()
-                .then(response => {
-                    if (response.code === 20000) {
-                        friendList.value = response.data.userList
-                    }
-                })
-        }
 
         fetchFriendList()
 
@@ -44,11 +35,13 @@ export default defineComponent({
             const userId = data.user_id
             const friendId = data.friend_id
             if (response.code === 20000 && friendId === userStore.userInfo.userId) {
-                // 对方可能是新用户
                 if (!chatStore.userChat[userId]) {
                     set(chatStore.userChat, userId, [])
-                    // 刷新一下好友列表
-                    await fetchFriendList()
+                    // 对方可能是新用户
+                    if (!friendList.value.find(it => it.userId === userId)) {
+                        // 刷新一下好友列表
+                        await fetchFriendList()
+                    }
                 }
                 chatStore.userChat[userId].push(data)
                 const friendNickname = (friendList.value.find(user => user.userId === userId) || { nickname: '未命名' }).nickname
@@ -64,20 +57,13 @@ export default defineComponent({
             }
         })
 
-        const nicknameMap = computed(() => {
-            return friendList.value.concat(info.value).reduce((a, b) => {
-                a[b.userId] = b.nickname
-                return a
-            }, {})
-        })
-
-
-        const page = 1
+        let page = 1
         const pageSize = 20
         const scrollSmooth = ref(true)
 
+        // 初次点击，或者切换会话
         function fetchChatList() {
-            getMessage(selectUserId.value, page, pageSize)
+            return getMessage(selectUserId.value, page, pageSize)
                 .then(list => {
                     if (list) {
                         scrollSmooth.value = false
@@ -88,22 +74,7 @@ export default defineComponent({
                     }
                 })
         }
-
-        const chatListComputed = computed(() => {
-            if (!selectUserId.value) {
-                return []
-            }
-            if (!chatStore.userChat[selectUserId.value]) {
-                return []
-            }
-            nextTick(() => {
-                chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
-            })
-            return chatStore.userChat[selectUserId.value].map(item => ({
-                nickname: nicknameMap.value[item.user_id],
-                ...item,
-            }))
-        })
+        const selectUserId = ref(null)
 
         const content = ref('')
         const chatBoxElement = ref(null) // Element
@@ -121,8 +92,9 @@ export default defineComponent({
             content.value = ''
         }
 
-        const selectUserId = ref(null)
+
         function onSelect(id) {
+            page = 1
             selectUserId.value = id
             fetchChatList()
         }
@@ -140,12 +112,18 @@ export default defineComponent({
 
 
 
-        const contentClass = function (userId) {
-            return {
-                'bg-info': userId === info.value.userId,
-                'bg-body-secondary': userId !== info.value.userId,
-                'text-light': userId === info.value.userId,
-                'text-black': userId !== info.value.userId,
+        const contentClass = function (userId, type) {
+            if (type === chatType.TEXT || type === chatType.IMAGE) {
+                return {
+                    'bg-info': userId === info.value.userId,
+                    'bg-body-secondary': userId !== info.value.userId,
+                    'text-light': userId === info.value.userId,
+                    'text-black': userId !== info.value.userId,
+                }
+            } else if (type === chatType.FILE) {
+                return {
+                    'border': true
+                }
             }
         }
 
@@ -192,6 +170,29 @@ export default defineComponent({
             return join(BASE_URL, `/chat/upload?token=${getToken()}&friendId=${selectUserId.value}&chatId=${chatId}&type=${type}`)
         }
 
+        const isDragenter = ref(false)
+        function onDrop(e) {
+            isDragenter.value = false
+            const file = e.dataTransfer.files[0]
+            if (file) {
+                let type = chatType.FILE
+                if (file.type.includes('image')) {
+                    type = chatType.IMAGE
+                }
+                sendUploadMessage(selectUserId.value, file, type)
+            }
+        }
+
+        function onDragenter() {
+            isDragenter.value = true
+            console.log('enter')
+        }
+
+        function onDragleave() {
+            isDragenter.value = false
+            console.log('leave')
+        }
+
         return {
 
             info,
@@ -199,8 +200,6 @@ export default defineComponent({
             onEditSubmit,
             friendList,
             friendListComputed,
-            nicknameMap,
-            chatListComputed,
             selectUserId,
             selectStyle,
             isSelectChat,
@@ -219,6 +218,13 @@ export default defineComponent({
             generateFileUrl,
 
             onExit,
+
+            onDrop,
+            onDragenter,
+            onDragleave,
+            isDragenter,
+
+            chatStore,
         }
     }
 })

@@ -57,7 +57,7 @@ export async function postChatUpload(userId, friendId, uuid, originFilename, mim
         }
         chatId = item.insertId
         await createOneUpload(uuid, userId, friendId, chatId, originFilename, mimetype, connection)
-        notifyChatToFriend(chatId, userId, friendId, '', type)
+        notifyChatToFriend(chatId, userId, friendId, originFilename, type)
     })
     return {
         code: 20000,

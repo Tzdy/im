@@ -23,7 +23,7 @@ export function postChat(friendId, content) {
     })
 }
 
-export function postChatUpload(type, friendId, file) {
+export function postChatUpload(type, friendId, file, uploadCallback) {
     const formData = new FormData()
     formData.append('type', type)
     formData.append('friendId', friendId)
@@ -33,5 +33,8 @@ export function postChatUpload(type, friendId, file) {
         url: '/chat/upload',
         method: 'post',
         data: formData,
+        onUploadProgress(e) {
+            uploadCallback(e)
+        }
     })
 }
