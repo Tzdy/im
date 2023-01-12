@@ -203,9 +203,8 @@
                                 <div v-show="!item.__load" class="spinner-border" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <!-- __load是一个临时变量 -->
-                                <img v-show="item.__load" @load="$set(item, '__load', true)" style="max-width: 300px;"
-                                    :src="generateFileUrl(item.id, item.type)" alt="">
+                                <img loading v-show="item.__load" @load="$set(item, '__load', true)"
+                                    style="max-width: 300px;" :src="generateFileUrl(item.id, item.type)" alt="">
                             </a>
                             <div v-else-if="item.type === chatType.FILE" style="width: 282px;" class="p-2">
                                 <div>{{ item.content }}</div>

@@ -36,11 +36,14 @@ export default defineComponent({
             const friendId = data.friend_id
             if (response.code === 20000 && friendId === userStore.userInfo.userId) {
                 if (!chatStore.userChat[userId]) {
-                    set(chatStore.userChat, userId, [])
                     // 对方可能是新用户
                     if (!friendList.value.find(it => it.userId === userId)) {
                         // 刷新一下好友列表
+                        set(chatStore.userChat, userId, [])
                         await fetchFriendList()
+                    } else {
+                        // 只有用户点击过的，才会实时存储消息。
+                        return
                     }
                 }
                 chatStore.userChat[userId].push(data)
@@ -79,12 +82,13 @@ export default defineComponent({
         const content = ref('')
         const chatBoxElement = ref(null) // Element
 
-        function onSendMessage() {
+        async function onSendMessage() {
             const _content = content.value
             if (!_content) {
                 return
             }
-            sendMessage(selectUserId.value, _content)
+            await sendMessage(selectUserId.value, _content)
+            chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
             content.value = ''
         }
 
@@ -94,6 +98,9 @@ export default defineComponent({
 
 
         function onSelect(id) {
+            if (selectUserId.value === id) {
+                return
+            }
             page = 1
             selectUserId.value = id
             fetchChatList()

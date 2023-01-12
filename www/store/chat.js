@@ -26,6 +26,9 @@ export function fetchFriendList() {
 
 export function getMessage(friendId, page, pageSize) {
     if (chatStore.userChat[friendId]) {
+        chatStore.userChat[friendId].forEach(item => {
+            item.__load = false
+        })
         return Promise.resolve(chatStore.userChat[friendId])
     } else {
         return getChat(friendId, page, pageSize)
@@ -33,6 +36,7 @@ export function getMessage(friendId, page, pageSize) {
                 if (response.code === 20000) {
                     set(chatStore.userChat, friendId, response.data.list.map(item => ({
                         nickname: nicknameMap.value[item.userId],
+                        __load: false,
                         ...item
                     })))
                 }
