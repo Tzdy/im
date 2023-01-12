@@ -8,6 +8,7 @@ import { goLogin } from '../router.js'
 import { notify } from '../util/notify.js'
 import { BASE_URL } from '../config.js'
 import { getToken } from '../util/storage.js'
+import { throttling } from '../util/throttling.js'
 
 export default defineComponent({
     template: '#index-main',
@@ -29,6 +30,23 @@ export default defineComponent({
 
         fetchFriendList()
 
+
+        const hasNewMsg = ref(false)
+
+        const onScrollChat = throttling(() => {
+            if (!hasNewMsg.value) {
+                return
+            }
+            if (chatBoxElement.value.scrollHeight - chatBoxElement.value.scrollTop < 1.5 * chatBoxElement.value.offsetHeight) {
+                hasNewMsg.value = false
+            }
+        }, 400)
+
+        function onScrollChatToBottom() {
+            hasNewMsg.value = false
+            chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
+        }
+
         eventBus.$on(EVENT.CHAT, async function (response) {
             const data = response.data
             // 这是对方发送的信息，user_id是我friend的id
@@ -47,6 +65,13 @@ export default defineComponent({
                     }
                 }
                 chatStore.userChat[userId].push(data)
+                if (chatBoxElement.value.scrollHeight - chatBoxElement.value.scrollTop < 1.5 * chatBoxElement.value.offsetHeight) {
+                    nextTick(() => {
+                        chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
+                    })
+                } else {
+                    hasNewMsg.value = true
+                }
                 const friendNickname = (friendList.value.find(user => user.userId === userId) || { nickname: '未命名' }).nickname
                 notify(`${friendNickname}，发送消息。`)
             }
@@ -122,10 +147,8 @@ export default defineComponent({
         const contentClass = function (userId, type) {
             if (type === chatType.TEXT || type === chatType.IMAGE) {
                 return {
-                    'bg-info': userId === info.value.userId,
-                    'bg-body-secondary': userId !== info.value.userId,
-                    'text-light': userId === info.value.userId,
-                    'text-black': userId !== info.value.userId,
+                    'text-bg-primary': userId === info.value.userId,
+                    'text-bg-light': userId !== info.value.userId,
                 }
             } else if (type === chatType.FILE) {
                 return {
@@ -218,6 +241,9 @@ export default defineComponent({
 
             content,
             chatBoxElement,
+            hasNewMsg,
+            onScrollChat,
+            onScrollChatToBottom,
             onSendMessage,
             onResetMessage,
             onUploadFile,

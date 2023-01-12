@@ -35,7 +35,7 @@ export function getMessage(friendId, page, pageSize) {
             .then(response => {
                 if (response.code === 20000) {
                     set(chatStore.userChat, friendId, response.data.list.map(item => ({
-                        nickname: nicknameMap.value[item.userId],
+                        nickname: nicknameMap.value[item.user_id],
                         __load: false,
                         ...item
                     })))

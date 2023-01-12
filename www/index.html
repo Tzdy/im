@@ -191,20 +191,23 @@
                 <h1>Welcome</h1>
             </div>
             <div v-else class="main">
-                <div ref="chatBoxElement" :style="{scrollBehavior: scrollSmooth ? 'smooth' : 'auto'}" class="chat-box">
+                <div ref="chatBoxElement" @scroll="onScrollChat"
+                    :style="{scrollBehavior: scrollSmooth ? 'smooth' : 'auto'}" class="chat-box position-relative">
                     <div :style="{direction: item.user_id !== info.userId ? 'ltr' : 'rtl', minHeight: '64px'}"
                         v-for="item in chatStore.userChat[selectUserId]" :key="item.id" class="p-3 mb-4 d-flex">
                         <div class="name">{{ item.nickname }}</div>
                         <div :style="{direction: 'ltr', [item.user_id !== info.userId ? 'marginLeft' : 'marginRight']: '32px', [item.user_id !== info.userId ? 'marginRight' : 'marginLeft']: '90px' }"
                             class="content p-2 rounded" :class="contentClass(item.user_id, item.type)">
                             <span v-if="item.type === chatType.TEXT">{{ item.content }}</span>
-                            <a v-else-if="item.type === chatType.IMAGE && item.id"
+                            <a v-else-if="item.type === chatType.IMAGE && item.id" style="text-decoration: none;"
                                 :href="generateFileUrl(item.id, item.type)" target="_blank">
-                                <div v-show="!item.__load" class="spinner-border" role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                                <div style="width: 300px; height: 200px; line-height: 100px;" class="text-center"
+                                    v-show="!item.__load">
+                                    <span>Loading...</span>
                                 </div>
-                                <img loading v-show="item.__load" @load="$set(item, '__load', true)"
-                                    style="max-width: 300px;" :src="generateFileUrl(item.id, item.type)" alt="">
+                                <img v-show="item.__load" @load="$set(item, '__load', true)"
+                                    style="max-width: 300px; max-height: 200px;"
+                                    :src="generateFileUrl(item.id, item.type)" alt="">
                             </a>
                             <div v-else-if="item.type === chatType.FILE" style="width: 282px;" class="p-2">
                                 <div>{{ item.content }}</div>
@@ -221,13 +224,12 @@
                                     </a>
                                 </div>
                             </div>
-                            <div v-else>
-                                <div class="spinner-border" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
+                    <div @click="onScrollChatToBottom" v-show="hasNewMsg"
+                        class="text-bg-success p-2 position-sticky bottom-0 ms-auto me-auto rounded"
+                        style="font-size: 12px; width: fit-content; cursor: pointer;">
+                        有新消息</div>
                 </div>
                 <div class="edit-box border-top border-secondary-subtle">
                     <div class="d-flex align-items-center p-2 border-bottom border-secondary-subtle">
