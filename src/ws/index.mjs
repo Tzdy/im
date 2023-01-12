@@ -5,6 +5,8 @@ export const TYPE = {
     AUTHORIZATION: 0,
     CHAT: 1,
     NOTIFY_STATE_CHANGE: 2, // 上下线通知
+    PING: 3,
+    PONG: 4,
 }
 
 export const STATUS = {
@@ -76,6 +78,13 @@ export function wsInit(server) {
                         }))
                     }
                 })
+            } else if (type === TYPE.PING) {
+                const userId = ws.userId
+                if (userId) {
+                    ws.send(JSON.stringify({
+                        type: TYPE.PONG
+                    }))
+                }
             }
         });
 
