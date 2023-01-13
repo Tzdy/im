@@ -145,12 +145,12 @@ export default defineComponent({
 
 
         const contentClass = function (userId, type) {
-            if (type === chatType.TEXT || type === chatType.IMAGE) {
+            if (type === chatType.TEXT) {
                 return {
                     'text-bg-primary': userId === info.value.userId,
                     'text-bg-light': userId !== info.value.userId,
                 }
-            } else if (type === chatType.FILE) {
+            } else if (type === chatType.FILE || type === chatType.IMAGE) {
                 return {
                     'border': true
                 }

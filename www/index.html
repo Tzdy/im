@@ -199,7 +199,8 @@
                         <div :style="{direction: 'ltr', [item.user_id !== info.userId ? 'marginLeft' : 'marginRight']: '32px', [item.user_id !== info.userId ? 'marginRight' : 'marginLeft']: '90px' }"
                             class="content p-2 rounded" :class="contentClass(item.user_id, item.type)">
                             <span v-if="item.type === chatType.TEXT">{{ item.content }}</span>
-                            <a v-else-if="item.type === chatType.IMAGE && item.id" style="text-decoration: none;"
+                            <a class="bg-secondary text-white d-inline-block"
+                                v-else-if="item.type === chatType.IMAGE && item.id" style="text-decoration: none;"
                                 :href="generateFileUrl(item.id, item.type)" target="_blank">
                                 <div style="width: 300px; height: 200px; line-height: 100px;" class="text-center"
                                     v-show="!item.__load">
