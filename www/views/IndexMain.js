@@ -6,7 +6,7 @@ import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage, fetchF
 import { openWs, eventBus, STATUS, EVENT } from '../ws.js'
 import { goLogin } from '../router.js'
 import { notify } from '../util/notify.js'
-import { BASE_URL } from '../config.js'
+import { VUE_BASE } from '../config.js'
 import { getToken } from '../util/storage.js'
 import { throttling } from '../util/throttling.js'
 
@@ -197,7 +197,7 @@ export default defineComponent({
         }
 
         function generateFileUrl(chatId, type) {
-            return join(BASE_URL, `/chat/upload?token=${getToken()}&friendId=${selectUserId.value}&chatId=${chatId}&type=${type}`)
+            return join(VUE_BASE, `/chat/upload?token=${getToken()}&friendId=${selectUserId.value}&chatId=${chatId}&type=${type}`)
         }
 
         const isDragenter = ref(false)

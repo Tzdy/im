@@ -1,13 +1,13 @@
-const BASE = '/'
+import { VUE_ROOT } from './config.js'
 
 export function goHome() {
-    window.location.href = BASE + 'index.html'
+    window.location.href = VUE_ROOT + 'index.html'
 }
 
 export function goRegister() {
-    window.location.href = BASE + 'register.html'
+    window.location.href = VUE_ROOT + 'register.html'
 }
 
 export function goLogin(errMessage) {
-    window.location.href = BASE + 'login.html' + (errMessage ? `?errMsg=${errMessage}` : '')
+    window.location.href = VUE_ROOT + 'login.html' + (errMessage ? `?errMsg=${errMessage}` : '')
 }

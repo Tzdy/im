@@ -22,7 +22,7 @@ export let wss = null
 export function wsInit(server) {
 
     wss = new WebSocketServer({
-        path: '/ws',
+        path: process.env.SERVER_WS_ROOT,
         server
     })
     function heartbeat() {

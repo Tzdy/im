@@ -1,11 +1,11 @@
-import { BASE_URL } from '../config.js';
+import { VUE_BASE } from '../config.js';
 import axios from '../public/js/axios.esm.js'
 import { goLogin } from '../router.js';
 import { getToken } from './storage.js';
 
 
 const instance = axios.create({
-    baseURL: BASE_URL,
+    baseURL: VUE_BASE,
 
 })
 

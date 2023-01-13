@@ -16,7 +16,7 @@ wsInit(server)
 
 app.use(CorsMiddleware)
 app.use(bodyParser.json())
-app.use(process.env.BASE, router)
+app.use(process.env.SERVER_BASE, router)
 
 app.use((err, req, res, next) => {
     logicError(err, res)
@@ -24,4 +24,4 @@ app.use((err, req, res, next) => {
 })
 
 
-server.listen(Number(process.env.PORT))
+server.listen(Number(process.env.SERVER_PORT))

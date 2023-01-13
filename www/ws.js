@@ -1,4 +1,4 @@
-import { WS_URL } from "./config.js"
+import { VUE_WS_URL } from "./config.js"
 import Vue from "./public/js/vue.esm.js"
 import { getToken } from "./util/storage.js"
 
@@ -37,7 +37,7 @@ export const STATUS = {
 export function openWs() {
     const token = getToken()
     return new Promise(resolve => {
-        ws = new WebSocket(WS_URL)
+        ws = new WebSocket(VUE_WS_URL)
         ws.onopen = function () {
             ws.send(JSON.stringify({
                 type: TYPE.AUTHORIZATION,

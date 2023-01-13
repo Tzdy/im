@@ -1,3 +1,4 @@
 node_modules
 *.local
 upload
+www/config.js
