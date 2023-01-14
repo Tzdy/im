@@ -9,6 +9,7 @@ import { notify } from '../util/notify.js'
 import { VUE_BASE } from '../config.js'
 import { getToken } from '../util/storage.js'
 import { throttling } from '../util/throttling.js'
+import { relativeTimeFormat } from '../util/timeFormat.js'
 
 export default defineComponent({
     template: '#index-main',
@@ -147,8 +148,8 @@ export default defineComponent({
         const contentClass = function (userId, type) {
             if (type === chatType.TEXT) {
                 return {
-                    'text-bg-primary': userId === info.value.userId,
-                    'text-bg-light': userId !== info.value.userId,
+                    'text-bg-mine': userId === info.value.userId,
+                    'text-bg-anyone': userId !== info.value.userId,
                 }
             } else if (type === chatType.FILE || type === chatType.IMAGE) {
                 return {
@@ -223,7 +224,24 @@ export default defineComponent({
             console.log('leave')
         }
 
+
+        function isDisplayTime(chatList, index) {
+            if (chatList.length === 0) {
+                return false
+            }
+            if (chatList.length === 1 || index === 0) {
+                return true
+            }
+            const a = new Date(chatList[index].created_time).getTime()
+            const b = new Date(chatList[index - 1].created_time).getTime()
+            if (a - b >= 1000 * 60 * 5) {
+                return true
+            }
+        }
+
         return {
+            relativeTimeFormat,
+            isDisplayTime,
 
             info,
             editInfo,
