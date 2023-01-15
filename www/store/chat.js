@@ -8,7 +8,7 @@ export const chatStore = reactive({
     userChat: {}
 })
 
-const nicknameMap = computed(() => {
+export const nicknameMap = computed(() => {
     return chatStore.friendList.concat(userStore.userInfo).reduce((a, b) => {
         a[b.userId] = b.nickname
         return a
@@ -60,13 +60,18 @@ export function sendMessage(friendId, content, type = chatType.TEXT) {
                 if (friendIndex !== -1) {
                     chatStore.friendList[friendIndex].content = content
                 }
-                chatStore.userChat[friendId].push({
+                const item = {
                     id: response.data.chatId,
                     user_id: userStore.userInfo.userId,
                     friend_id: friendId,
                     content: content,
                     type,
                     "created_time": Date.now(),
+                }
+                chatStore.userChat[friendId].push({
+                    nickname: nicknameMap.value[item.user_id],
+                    __load: false,
+                    ...item
                 })
             }
         })
@@ -82,7 +87,12 @@ export function sendUploadMessage(friendId, file, type = chatType.IMAGE) {
         "created_time": Date.now(),
         loaded: 0
     }
-    chatStore.userChat[friendId].push(item)
+    chatStore.userChat[friendId].push({
+        nickname: nicknameMap.value[item.user_id],
+        __load: false,
+        loaded: 0,
+        ...item
+    })
     function loadCallback(e) {
         item.loaded = `${parseInt((e.loaded / e.total) * 100, 0)}%`
     }

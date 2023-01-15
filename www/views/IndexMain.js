@@ -2,7 +2,7 @@ import { ref, computed, reactive, nextTick, defineComponent, set } from '../publ
 import { join } from '../util/path.js'
 import { putInfo } from '../api/auth.js'
 import { exit, userStore } from '../store/user.js'
-import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage, fetchFriendList } from '../store/chat.js'
+import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage, fetchFriendList, nicknameMap } from '../store/chat.js'
 import { openWs, eventBus, STATUS, EVENT } from '../ws.js'
 import { goLogin } from '../router.js'
 import { notify } from '../util/notify.js'
@@ -74,7 +74,11 @@ export default defineComponent({
                         return
                     }
                 }
-                chatStore.userChat[userId].push(data)
+                chatStore.userChat[userId].push({
+                    nickname: nicknameMap.value[data.user_id],
+                    __load: false,
+                    ...data
+                })
                 if (chatBoxElement.value.scrollHeight - chatBoxElement.value.scrollTop < 1.5 * chatBoxElement.value.offsetHeight) {
                     nextTick(() => {
                         chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
