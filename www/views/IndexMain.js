@@ -45,7 +45,7 @@ export default defineComponent({
             if (chatBoxElement.value.scrollHeight - chatBoxElement.value.scrollTop < 1.5 * chatBoxElement.value.offsetHeight) {
                 hasNewMsg.value = false
             }
-        }, 400)
+        }, 600)
 
         function onScrollChatToBottom() {
             hasNewMsg.value = false
@@ -120,17 +120,12 @@ export default defineComponent({
         async function onSendMessage() {
             const _content = content.value
             const _selectUserId = selectUserId.value
-            if (!_content) {
+            if (!_content || !_selectUserId) {
                 return
             }
-            await sendMessage(_selectUserId, _content)
-            // 更新好友栏最新消息
-            const friendIndex = chatStore.friendList.findIndex(item => item.userId === _selectUserId)
-            if (friendIndex) {
-                chatStore.friendList[friendIndex].content = _content
-            }
-            chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
             content.value = ''
+            await sendMessage(_selectUserId, _content)
+            chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
         }
 
         function onResetMessage() {
@@ -198,6 +193,9 @@ export default defineComponent({
             const input = document.createElement('input')
             input.onchange = function () {
                 sendUploadMessage(selectUserId.value, input.files[0], type)
+                nextTick(() => {
+                    chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
+                })
             }
             input.setAttribute('type', 'file')
             input.click()

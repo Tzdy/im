@@ -55,6 +55,11 @@ export function sendMessage(friendId, content, type = chatType.TEXT) {
     return postChat(friendId, content)
         .then(response => {
             if (response.code === 20000) {
+                // 更新好友栏最新消息
+                const friendIndex = chatStore.friendList.findIndex(item => item.userId === friendId)
+                if (friendIndex !== -1) {
+                    chatStore.friendList[friendIndex].content = content
+                }
                 chatStore.userChat[friendId].push({
                     id: response.data.chatId,
                     user_id: userStore.userInfo.userId,
@@ -90,6 +95,11 @@ export function sendUploadMessage(friendId, file, type = chatType.IMAGE) {
                     const oldIndex = chatStore.userChat[friendId].findIndex(it => it.id === item.id)
                     chatStore.userChat[friendId].splice(oldIndex, 1)
                     chatStore.userChat[friendId].push(item)
+                }
+                // 更新好友栏最新消息
+                const friendIndex = chatStore.friendList.findIndex(item => item.userId === friendId)
+                if (friendIndex !== -1) {
+                    chatStore.friendList[friendIndex].content = file.name
                 }
             }
         })

@@ -219,7 +219,8 @@
             </div>
             <div v-else class="main">
                 <div ref="chatBoxElement" @scroll="onScrollChat"
-                    :style="{scrollBehavior: scrollSmooth ? 'smooth' : 'auto'}" class="chat-box position-relative">
+                    :style="{scrollBehavior: scrollSmooth ? 'smooth' : 'auto'}" style="will-change: scroll-position;"
+                    class="chat-box position-relative">
                     <!-- 聊天盒子 -->
                     <div v-for="item,index in chatStore.userChat[selectUserId]" :key="item.id">
                         <div v-if="isDisplayTime(chatStore.userChat[selectUserId], index)"
@@ -232,17 +233,34 @@
                             <div :style="{direction: 'ltr', [item.user_id !== info.userId ? 'marginLeft' : 'marginRight']: '32px', [item.user_id !== info.userId ? 'marginRight' : 'marginLeft']: '90px' }"
                                 class="content p-2 rounded" :class="contentClass(item.user_id, item.type)">
                                 <span v-if="item.type === chatType.TEXT">{{ item.content }}</span>
-                                <a class="text-white d-inline-block" :class="{'bg-secondary': !item.__load}"
-                                    v-else-if="item.type === chatType.IMAGE && item.id" style="text-decoration: none;"
-                                    :href="generateFileUrl(item.id, item.type)" target="_blank">
-                                    <div style="width: 300px; height: 200px; line-height: 100px;" class="text-center"
-                                        v-show="!item.__load">
-                                        <span>Loading...</span>
+                                <div v-else-if="item.type === chatType.IMAGE">
+                                    <div class="p-2" style="width: 300px; height: 200px;"
+                                        v-if="item.user_id === info.userId && !item.id">
+                                        <div>{{ item.content }}</div>
+                                        <div class="progress" role="progressbar">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                :style="{ width: item.loaded }"></div>
+                                        </div>
                                     </div>
-                                    <img v-show="item.__load" @load="$set(item, '__load', true)"
-                                        style="max-width: 300px; max-height: 200px;"
-                                        :src="generateFileUrl(item.id, item.type)" alt="">
-                                </a>
+                                    <a v-if="item.id" class="text-white d-inline-block"
+                                        :class="{'bg-secondary': !item.__load}" style="text-decoration: none;"
+                                        :href="generateFileUrl(item.id, item.type)" target="_blank">
+                                        <!-- 上传中 -->
+                                        <div v-if="item.user_id === info.userId && !item.id">
+                                            <div class="progress" role="progressbar">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                    :style="{ width: item.loaded }"></div>
+                                            </div>
+                                        </div>
+                                        <div style="width: 300px; height: 200px; line-height: 100px;"
+                                            class="text-center" v-show="!item.__load">
+                                            <span>Loading...</span>
+                                        </div>
+                                        <img v-show="item.__load" @load="$set(item, '__load', true)"
+                                            style="max-width: 300px; max-height: 200px;"
+                                            :src="generateFileUrl(item.id, item.type)" alt="">
+                                    </a>
+                                </div>
                                 <div v-else-if="item.type === chatType.FILE" style="width: 282px;" class="p-2">
                                     <div>{{ item.content }}</div>
                                     <div v-if="item.user_id === info.userId && !item.id">

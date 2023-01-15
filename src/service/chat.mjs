@@ -1,4 +1,4 @@
-import { chatType, createOneChat, createOneFileChat, createOneImageChat, findChatByUserId } from "../model/chat.mjs";
+import { chatType, createOneChat, findChatByUserId } from "../model/chat.mjs";
 import { startTransaction } from "../model/index.mjs";
 import { createOneUpload, findOneUpload } from "../model/upload.mjs";
 import { HttpOKException } from "../util/exception.mjs";
@@ -25,7 +25,7 @@ function notifyChatToFriend(chatId, userId, friendId, content, type) {
 }
 
 export async function postChat(userId, friendId, content) {
-    const item = await createOneChat(userId, friendId, content)
+    const item = await createOneChat(userId, friendId, content, chatType.TEXT)
     const { insertId } = item
     notifyChatToFriend(insertId, userId, friendId, content, chatType.TEXT)
     return {
@@ -49,9 +49,9 @@ export async function postChatUpload(userId, friendId, uuid, originFilename, mim
     let chatId = null
     await startTransaction(async (connection) => {
         if (type === chatType.IMAGE) {
-            item = await createOneImageChat(userId, friendId, connection)
+            item = await createOneChat(userId, friendId, originFilename, chatType.IMAGE, connection)
         } else if (type === chatType.FILE) {
-            item = await createOneFileChat(userId, friendId, originFilename, connection)
+            item = await createOneChat(userId, friendId, originFilename, chatType.FILE, connection)
         } else {
             throw new HttpOKException(20001, '上传类型CODE错误')
         }
