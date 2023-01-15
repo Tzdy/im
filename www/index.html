@@ -52,7 +52,6 @@
             flex: 0 0 250px;
             display: flex;
             flex-direction: column;
-            padding: 16px;
             box-sizing: border-box;
         }
 
@@ -148,23 +147,40 @@
 </head>
 
 <body>
+    <template id="user-card">
+        <div :style="selectStyle" class="d-flex overflow-auto">
+            <img v-if="avatar" class="rounded flex-grow-0 flex-shrink-0 me-2" width="40" height="40" :src="avatar"
+                alt="">
+            <div v-else class="rounded flex-grow-0 flex-shrink-0 me-2 text-center shadow-sm"
+                style="width: 40px; height: 40px; line-height: 40px;">{{ nickname[0] }}</div>
+            <div class="d-flex w-100 flex-fill flex-column overflow-auto">
+                <div style="font-size: 14px;" class="text-truncate flex-grow-1">{{ nickname }}</div>
+                <div style="font-size: 12px;" class="text-truncate text-secondary-emphasis flex-grow-1">{{ content }}
+                </div>
+            </div>
+        </div>
+    </template>
+
     <template id="index-main">
         <div class="container-main">
-            <div class="sidebar border-end border-secondary-subtle">
+            <div class="sidebar overflow-auto border-end border-secondary-subtle">
                 <div class="flex-fill h-100">
-                    <div class="user-info">
+                    <!-- <div class="user-info">
                         <span>名称：</span>
                         <span>{{ info.nickname }}</span>
-                    </div>
-                    <div style="margin: 16px 0;"></div>
-                    <div class="p-2" @click="onSelect(item.userId)" :style="selectStyle(item.userId)"
+                    </div> -->
+                    <!-- <div style="margin: 16px 0;"></div> -->
+                    <user-card @click.native="onSelect(item.userId)" class="p-2 mt-2"
+                        :selected="selectUserId === item.userId" :nickname="item.nickname" :content="item.content"
+                        v-for="item in friendListComputed" :key="item.userId" />
+                    <!-- <div class="p-2" @click="onSelect(item.userId)" :style="selectStyle(item.userId)"
                         style="margin-top: 4px; cursor:pointer;" v-for="item in friendListComputed" :key="item.userId">
                         <span>{{ item.nickname }}</span>
                         <span class="float-end" style="color: green;" v-show="item.isOnline">在线</span>
                         <span class="float-end" style="color: gray;" v-show="!item.isOnline">离线</span>
-                    </div>
+                    </div> -->
                 </div>
-                <div style="height: 48px;" class="flex-shrink-0 flex-grow-0">
+                <div style="height: 48px;" class="flex-shrink-0 flex-grow-0 px-2">
                     <button @click="onOpenSetting" class="btn btn-primary" type="button">设置</button>
                     <button @click="onExit" class="btn btn-danger ms-2" type="button">退出</button>
                 </div>

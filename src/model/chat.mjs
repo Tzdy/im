@@ -23,3 +23,5 @@ export function createOneImageChat(userId, friendId, connection) {
 export function createOneFileChat(userId, friendId, filename, connection) {
     return query(`INSERT INTO ${TABLE_NAME}(user_id, friend_id, type, content) VALUES(?, ?, ?, ?)`, [userId, friendId, chatType.FILE, filename], connection)
 }
+
+

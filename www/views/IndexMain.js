@@ -10,9 +10,13 @@ import { VUE_BASE } from '../config.js'
 import { getToken } from '../util/storage.js'
 import { throttling } from '../util/throttling.js'
 import { relativeTimeFormat } from '../util/timeFormat.js'
+import UserCard from '../components/UserCard.js'
 
 export default defineComponent({
     template: '#index-main',
+    components: {
+        UserCard,
+    },
     setup() {
         openWs()
         const info = computed(() => userStore.userInfo)
@@ -54,6 +58,11 @@ export default defineComponent({
             const userId = data.user_id
             const friendId = data.friend_id
             if (response.code === 20000 && friendId === userStore.userInfo.userId) {
+                // 更新好友栏最新消息
+                const friendIndex = chatStore.friendList.findIndex(item => item.userId === userId)
+                if (friendIndex !== -1) {
+                    chatStore.friendList[friendIndex].content = data.content
+                }
                 if (!chatStore.userChat[userId]) {
                     // 对方可能是新用户
                     if (!friendList.value.find(it => it.userId === userId)) {
@@ -110,10 +119,16 @@ export default defineComponent({
 
         async function onSendMessage() {
             const _content = content.value
+            const _selectUserId = selectUserId.value
             if (!_content) {
                 return
             }
-            await sendMessage(selectUserId.value, _content)
+            await sendMessage(_selectUserId, _content)
+            // 更新好友栏最新消息
+            const friendIndex = chatStore.friendList.findIndex(item => item.userId === _selectUserId)
+            if (friendIndex) {
+                chatStore.friendList[friendIndex].content = _content
+            }
             chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
             content.value = ''
         }
@@ -134,15 +149,6 @@ export default defineComponent({
         const isSelectChat = computed(() => {
             return selectUserId.value !== null
         })
-        function selectStyle(id) {
-            if (selectUserId.value === id) {
-                return {
-                    backgroundColor: 'rgba(208,215,222,.32)'
-                }
-            }
-            return {}
-        }
-
 
 
         const contentClass = function (userId, type) {
@@ -249,7 +255,6 @@ export default defineComponent({
             friendList,
             friendListComputed,
             selectUserId,
-            selectStyle,
             isSelectChat,
             onSelect,
             scrollSmooth,

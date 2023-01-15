@@ -3,6 +3,7 @@ import { createOneUser, findOneUserByUsername, findOneUserById, findUserNotUserI
 import { HttpOKException } from "../util/exception.mjs";
 import { wss } from "../ws/index.mjs";
 import { sign } from "../util/jwt.mjs";
+import { findLastChatByUserId } from "../model/user_chat.mjs";
 
 export async function login(username, password) {
     const user = (await findOneUserByUsername(username))[0]
@@ -56,12 +57,23 @@ export async function putInfo(userId, nickname) {
 
 export async function listAllUserNotMyself(userId) {
     let list = await findUserNotUserId(userId)
+    const userLastChatList = await findLastChatByUserId(userId)
+    const userMap = {}
+    userLastChatList.forEach(item => {
+        if (!userMap[item.user_id]) {
+            userMap[item.user_id] = item
+        }
+        if (!userMap[item.friend_id]) {
+            userMap[item.friend_id] = item
+        }
+    })
     const clients = Array.from(wss.clients)
     list = list.map(user => {
         const { id, ...item } = user
         return {
             isOnline: !!clients.find(ws => ws.userId === user.id),
             userId: user.id,
+            content: userMap[user.id].content,
             ...item,
         }
     })

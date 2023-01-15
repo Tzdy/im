@@ -17,7 +17,7 @@ const nicknameMap = computed(() => {
 
 export function fetchFriendList() {
     return getAllUserNotMyself()
-        .then(response => {
+        .then(async response => {
             if (response.code === 20000) {
                 chatStore.friendList = response.data.userList
             }
