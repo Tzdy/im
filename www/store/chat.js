@@ -89,13 +89,14 @@ export function sendMessage(friendId, content, type = chatType.TEXT) {
                     friend_id: friendId,
                     content: content,
                     type,
-                    "created_time": Date.now(),
+                    "created_time": response.data.createdTime,
                 }
                 chatStore.userChat[friendId].push({
                     nickname: nicknameMap.value[item.user_id],
                     __load: false,
                     ...item
                 })
+                setLatestChatTimeOne(friendId, response.data.createdTime)
             }
         })
 }
@@ -123,6 +124,7 @@ export function sendUploadMessage(friendId, file, type = chatType.IMAGE) {
         .then(response => {
             if (response.code === 20000) {
                 item.id = response.data.chatId
+                item.created_time = response.data.createdTime
                 // 上传图片的时候可以继续聊天
                 if (chatStore.userChat[friendId][chatStore.userChat[friendId].length - 1].id !== item.id) {
                     const oldIndex = chatStore.userChat[friendId].findIndex(it => it.id === item.id)
@@ -134,6 +136,7 @@ export function sendUploadMessage(friendId, file, type = chatType.IMAGE) {
                 if (friendIndex !== -1) {
                     chatStore.friendList[friendIndex].content = file.name
                 }
+                setLatestChatTimeOne(friendId, response.data.createdTime)
             }
         })
 }

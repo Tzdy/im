@@ -4,7 +4,7 @@ import { createOneUpload, findOneUpload } from "../model/upload.mjs";
 import { HttpOKException } from "../util/exception.mjs";
 import { TYPE, wss } from "../ws/index.mjs";
 
-function notifyChatToFriend(chatId, userId, friendId, content, type) {
+function notifyChatToFriend(chatId, userId, friendId, content, type, createdTime) {
     const clients = Array.from(wss.clients)
     const friend = clients.find(item => item.userId === friendId)
     // 如果在线
@@ -18,20 +18,23 @@ function notifyChatToFriend(chatId, userId, friendId, content, type) {
                 friend_id: friendId,
                 content,
                 type,
-                created_time: Date.now(),
+                created_time: createdTime,
             }
         }))
     }
 }
 
 export async function postChat(userId, friendId, content) {
-    const item = await createOneChat(userId, friendId, content, chatType.TEXT)
+    // 数据库中Date不精确到毫秒。
+    const createdTime = new Date(new Date().toUTCString())
+    const item = await createOneChat(userId, friendId, content, chatType.TEXT, createdTime)
     const { insertId } = item
-    notifyChatToFriend(insertId, userId, friendId, content, chatType.TEXT)
+    notifyChatToFriend(insertId, userId, friendId, content, chatType.TEXT, createdTime)
     return {
         code: 20000,
         data: {
             chatId: insertId,
+            createdTime,
         }
     }
 }
@@ -47,22 +50,24 @@ export async function getChat(userId, friendId, page, pageSize) {
 export async function postChatUpload(userId, friendId, uuid, originFilename, mimetype, type) {
     let item = null
     let chatId = null
+    const createdTime = new Date(new Date().toUTCString())
     await startTransaction(async (connection) => {
         if (type === chatType.IMAGE) {
-            item = await createOneChat(userId, friendId, originFilename, chatType.IMAGE, connection)
+            item = await createOneChat(userId, friendId, originFilename, chatType.IMAGE, createdTime, connection)
         } else if (type === chatType.FILE) {
-            item = await createOneChat(userId, friendId, originFilename, chatType.FILE, connection)
+            item = await createOneChat(userId, friendId, originFilename, chatType.FILE, createdTime, connection)
         } else {
             throw new HttpOKException(20001, '上传类型CODE错误')
         }
         chatId = item.insertId
-        await createOneUpload(uuid, userId, friendId, chatId, originFilename, mimetype, connection)
-        notifyChatToFriend(chatId, userId, friendId, originFilename, type)
+        await createOneUpload(uuid, userId, friendId, chatId, originFilename, mimetype, createdTime, connection)
+        notifyChatToFriend(chatId, userId, friendId, originFilename, type, createdTime)
     })
     return {
         code: 20000,
         data: {
             chatId,
+            createdTime,
         }
     }
 }

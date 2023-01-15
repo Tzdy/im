@@ -7,8 +7,8 @@ export const chatType = {
     FILE: 2,
 }
 
-export function createOneChat(userId, friendId, content, type, connection) {
-    return query(`INSERT INTO ${TABLE_NAME}(user_id, friend_id, content, type) VALUES(?, ?, ?, ?)`, [userId, friendId, content, type], connection)
+export function createOneChat(userId, friendId, content, type, date, connection) {
+    return query(`INSERT INTO ${TABLE_NAME}(user_id, friend_id, content, type, created_time) VALUES(?, ?, ?, ?, ?)`, [userId, friendId, content, type, date], connection)
 }
 
 export function findChatByUserId(userId, friendId, page, pageSize) {
