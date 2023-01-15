@@ -1,5 +1,5 @@
 import { computed, defineComponent } from "../public/js/vue.esm.js"
-
+import { relativeTimeFormat } from "../util/timeFormat.js"
 
 export default defineComponent({
     template: '#user-card',
@@ -7,11 +7,13 @@ export default defineComponent({
         avatar: String,
         nickname: String,
         content: String,
+        contentCreatedTime: String,
         selected: Boolean,
+        hasNewAlert: Boolean,
+        isOnline: Boolean,
     },
     setup(props) {
         const selectStyle = computed(() => {
-            console.log(props.selected)
             if (props.selected) {
                 return {
                     backgroundColor: 'rgba(208,215,222,.32)'
@@ -21,6 +23,7 @@ export default defineComponent({
         })
         return {
             selectStyle,
+            relativeTimeFormat,
         }
     }
 })

@@ -2,9 +2,10 @@ import { reactive, set, computed } from '../public/js/vue.esm.js'
 import { postChat, getChat, postChatUpload } from '../api/chat.js'
 import { getAllUserNotMyself } from '../api/auth.js'
 import { userStore } from './user.js'
-
+import { getLatestChatTime, setLatestChatTime } from '../util/storage.js'
 export const chatStore = reactive({
     friendList: [],
+    latestChatTime: {},
     userChat: {}
 })
 
@@ -15,11 +16,33 @@ export const nicknameMap = computed(() => {
     }, {})
 })
 
+export function setLatestChatTimeOne(friendId, time) {
+    const timeNumber = new Date(time).getTime()
+    set(chatStore.latestChatTime, friendId, timeNumber)
+    setLatestChatTime(userStore.userInfo.userId, chatStore.latestChatTime)
+}
+
 export function fetchFriendList() {
     return getAllUserNotMyself()
         .then(async response => {
             if (response.code === 20000) {
+                chatStore.latestChatTime = getLatestChatTime(userStore.userInfo.userId)
                 chatStore.friendList = response.data.userList
+                chatStore.friendList.forEach(item => {
+                    if (item.contentCreatedTime) {
+                        const timeNumber = new Date(item.contentCreatedTime).getTime()
+                        // 没有赋值的初始化，赋值的只有用户点击了，才能覆盖。
+                        if (chatStore.latestChatTime[item.userId] === undefined) {
+                            set(chatStore.latestChatTime, item.userId, timeNumber)
+                        }
+                    } else {
+                        // 没有会话的赋0，不然任何数字 > undefined都是false
+                        if (chatStore.latestChatTime[item.userId] === undefined) {
+                            set(chatStore.latestChatTime, item.userId, 0)
+                        }
+                    }
+                })
+                setLatestChatTime(userStore.userInfo.userId, chatStore.latestChatTime)
             }
         })
 }

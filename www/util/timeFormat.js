@@ -55,7 +55,8 @@ function dateFormat(date) {
  * @returns { string } hh:mm:ss
  */
 function timeFormat(date) {
-    return `${date.getHours()}:${padStart(date.getMinutes(), 2)}:${padStart(date.getSeconds(), 2)}`
+    return `${date.getHours()}:${padStart(date.getMinutes(), 2)}`
+    // :${padStart(date.getSeconds(), 2)} 不太需要显示秒
 }
 
 /**

@@ -2,7 +2,7 @@ import { ref, computed, reactive, nextTick, defineComponent, set } from '../publ
 import { join } from '../util/path.js'
 import { putInfo } from '../api/auth.js'
 import { exit, userStore } from '../store/user.js'
-import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage, fetchFriendList, nicknameMap } from '../store/chat.js'
+import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage, fetchFriendList, nicknameMap, setLatestChatTimeOne } from '../store/chat.js'
 import { openWs, eventBus, STATUS, EVENT } from '../ws.js'
 import { goLogin } from '../router.js'
 import { notify } from '../util/notify.js'
@@ -29,7 +29,19 @@ export default defineComponent({
         const friendListComputed = computed(() => {
             const onlineList = friendList.value.filter(item => item.isOnline)
             const offlineList = friendList.value.filter(item => !item.isOnline)
-            return onlineList.concat(offlineList)
+            return onlineList.concat(offlineList).map(item => {
+                let hasNewAlert = false
+                const timeNumber = new Date(item.contentCreatedTime).getTime()
+                if (chatStore.latestChatTime[item.userId]) {
+                    if (timeNumber > chatStore.latestChatTime[item.userId]) {
+                        hasNewAlert = true
+                    }
+                }
+                return {
+                    hasNewAlert,
+                    ...item
+                }
+            })
         })
 
 
@@ -54,7 +66,7 @@ export default defineComponent({
 
         eventBus.$on(EVENT.CHAT, async function (response) {
             const data = response.data
-            // 这是对方发送的信息，user_id是我friend的id
+            // 这是对方发送的信息，user_id是friend的id
             const userId = data.user_id
             const friendId = data.friend_id
             if (response.code === 20000 && friendId === userStore.userInfo.userId) {
@@ -62,6 +74,11 @@ export default defineComponent({
                 const friendIndex = chatStore.friendList.findIndex(item => item.userId === userId)
                 if (friendIndex !== -1) {
                     chatStore.friendList[friendIndex].content = data.content
+                    chatStore.friendList[friendIndex].contentCreatedTime = data.created_time
+                    // 如果处于会话中，就直接更新，不在头像上显示红点。
+                    if (selectUserId.value === userId) {
+                        setLatestChatTimeOne(userId, data.created_time)
+                    }
                 }
                 if (!chatStore.userChat[userId]) {
                     // 对方可能是新用户
@@ -137,12 +154,14 @@ export default defineComponent({
         }
 
 
-        function onSelect(id) {
+        function onSelect(id, time) {
             if (selectUserId.value === id) {
                 return
             }
             page = 1
             selectUserId.value = id
+            // 清除头像上红点
+            setLatestChatTimeOne(selectUserId.value, time)
             fetchChatList()
         }
         const isSelectChat = computed(() => {

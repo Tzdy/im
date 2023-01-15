@@ -74,6 +74,7 @@ export async function listAllUserNotMyself(userId) {
             isOnline: !!clients.find(ws => ws.userId === user.id),
             userId: user.id,
             content: userMap[user.id].content,
+            contentCreatedTime: userMap[user.id].created_time,
             ...item,
         }
     })
