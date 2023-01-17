@@ -235,7 +235,7 @@
                         <!-- 气泡 -->
                         <div :style="{direction: item.user_id !== info.userId ? 'ltr' : 'rtl', minHeight: '64px'}"
                             class="p-3 mb-4 d-flex">
-                            <div class="bg-body rounded text-center shadow-sm"
+                            <div class="bg-body rounded text-center shadow-sm flex-shrink-0"
                                 style="width: 40px; height: 40px;line-height: 40px;">{{ item.nickname[0] }}</div>
                             <div :style="{direction: 'ltr', [item.user_id !== info.userId ? 'marginLeft' : 'marginRight']: '16px', [item.user_id !== info.userId ? 'marginRight' : 'marginLeft']: '90px' }"
                                 class="content p-2 rounded" :class="contentClass(item.user_id, item.type)">
