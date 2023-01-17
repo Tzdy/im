@@ -29,10 +29,10 @@ function weekEqual(a, b) {
     const before = new Date(a.getTime())
     const after = new Date(a.getTime())
     const day = a.getDay() === 0 ? 7 : a.getDay()
-    before.setTime(before.getTime() - (day + 1) * 24 * 60 * 60 * 1000)
+    before.setTime(before.getTime() - day * 24 * 60 * 60 * 1000)
     after.setTime(after.getTime() + (7 - day) * 24 * 60 * 60 * 1000)
     before.setHours(0, 0, 0, 0)
-    after.setHours(0, 0, 0, 0)
+    after.setHours(23, 59, 59, 59)
     return b.getTime() >= before.getTime() && b.getTime() <= after.getTime()
 }
 
