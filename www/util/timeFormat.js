@@ -75,9 +75,12 @@ const DAY = ["日", "一", "二", "三", "四", "五", '六']
  * @param { string | Date | number } date 
  */
 export function relativeTimeFormat(date) {
+    if (date === undefined || date === null || date === '') {
+        return ''
+    }
     if (date && (typeof date === 'string' || typeof date === 'number')) {
         date = new Date(date)
-    }
+    } 
     const now = new Date()
     // 今天以内
     if (timeEqual(date, now, true, true, true)) {
