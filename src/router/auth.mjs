@@ -16,9 +16,6 @@ router.post('/register', asyncException(async (req, res) => {
 
 router.get('/info', TokenMiddleWare, asyncException(async (req, res) => {
     const userId = req.user.id
-    res.cookie('key', req.user.token, {
-        httpOnly: true,
-    })
     res.send(await info(userId))
 }))
 
