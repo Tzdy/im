@@ -7,6 +7,8 @@ CREATE TABLE user(
     username VARCHAR(32) NOT NULL,
     nickname VARCHAR(32) NOT NULL,
     password VARCHAR(32) NOT NULL,
+    avatar_type INTEGER DEFAULT 0,
+    avatar_version INTEGER DEFAULT 0,
     PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

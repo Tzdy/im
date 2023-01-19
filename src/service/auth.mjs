@@ -1,6 +1,6 @@
 import { HttpException } from "@tsdy/express-plugin-exception";
-import { createOneUser, findOneUserByUsername, findOneUserById, findUserNotUserId, updateOneById } from "../model/user.mjs";
-import { HttpOKException } from "../util/exception.mjs";
+import { createOneUser, findOneUserByUsername, findOneUserById, findUserNotUserId, updateOneById, updateOneAvatarVersionById } from "../model/user.mjs";
+import { HttpAuthException, HttpOKException } from "../util/exception.mjs";
 import { wss } from "../ws/index.mjs";
 import { sign } from "../util/jwt.mjs";
 import { findLastChatByUserId } from "../model/user_chat.mjs";
@@ -48,8 +48,8 @@ export async function info(userId) {
     }
 }
 
-export async function putInfo(userId, nickname) {
-    await updateOneById(userId, nickname)
+export async function putInfo(userId, nickname, avatarType) {
+    await updateOneById(userId, nickname, avatarType)
     return {
         code: 20000
     }
@@ -69,12 +69,14 @@ export async function listAllUserNotMyself(userId) {
     })
     const clients = Array.from(wss.clients)
     list = list.map(user => {
-        const { id, ...item } = user
+        const { id, avatar_type, avatar_version, ...item } = user
         return {
             isOnline: !!clients.find(ws => ws.userId === user.id),
             userId: user.id,
             content: userMap[user.id].content,
             contentCreatedTime: userMap[user.id].created_time,
+            avatarType: avatar_type,
+            avatarVersion: avatar_version,
             ...item,
         }
     })
@@ -82,6 +84,21 @@ export async function listAllUserNotMyself(userId) {
         code: 20000,
         data: {
             userList: list
+        }
+    }
+}
+
+export async function uploadAvatar(userId) {
+    const userList = await findOneUserById(userId)
+    if (!userList[0]) {
+        throw new HttpAuthException(10002, '用户不存在')
+    }
+    let version = userList[0].avatar_version
+    await updateOneAvatarVersionById(userId, ++version)
+    return {
+        code: 20000,
+        data: {
+            version,
         }
     }
 }

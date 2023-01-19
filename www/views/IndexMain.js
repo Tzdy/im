@@ -1,8 +1,8 @@
 import { ref, computed, reactive, nextTick, defineComponent, set } from '../public/js/vue.esm.js'
 import { join } from '../util/path.js'
-import { putInfo } from '../api/auth.js'
+import { postUploadAvatar, putInfo } from '../api/auth.js'
 import { exit, userStore } from '../store/user.js'
-import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage, fetchFriendList, nicknameMap, setLatestChatTimeOne } from '../store/chat.js'
+import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage, fetchFriendList, userMap, setLatestChatTimeOne } from '../store/chat.js'
 import { openWs, eventBus, STATUS, EVENT } from '../ws.js'
 import { goLogin } from '../router.js'
 import { notify } from '../util/notify.js'
@@ -21,7 +21,10 @@ export default defineComponent({
         openWs()
         const info = computed(() => userStore.userInfo)
         const editInfo = reactive({
-            nickname: ''
+            nickname: '',
+            avatarType: -1,
+            avatar: '',
+            avatarFile: null,
         })
 
         const friendList = computed(() => chatStore.friendList)
@@ -92,7 +95,9 @@ export default defineComponent({
                     }
                 }
                 chatStore.userChat[userId].push({
-                    nickname: nicknameMap.value[data.user_id],
+                    nickname: userMap.value[data.user_id].nickname,
+                    avatarType: userMap.value[data.user_id].avatarType,
+                    avatarVersion: userMap.value[data.user_id].avatarVersion,
                     __load: false,
                     ...data
                 })
@@ -187,7 +192,34 @@ export default defineComponent({
         const visibleSetting = ref(false)
         function onOpenSetting() {
             editInfo.nickname = info.value.nickname
+            editInfo.avatarType = info.value.avatarType
+            editInfo.avatar = (info.value.avatarType === 1 && info.value.avatarVersion !== 0) ? generateAvatarUrl(info.value.userId, info.value.avatarVersion) : ''
             visibleSetting.value = true
+        }
+
+        function onEditInfoAvatarTypeChange(e) {
+            if (e.target.checked) {
+                editInfo.avatarType = 1
+            } else {
+                editInfo.avatarType = 0
+            }
+        }
+
+        function onUploadAvatar() {
+            const input = document.createElement('input')
+            input.onchange = function () {
+                const url = URL.createObjectURL(input.files[0])
+                editInfo.avatarFile = input.files[0]
+                postUploadAvatar(editInfo.avatarFile).then(response => {
+                    if (response.code === 20000) {
+                        const version = response.data.version
+                        editInfo.avatar = url
+                        userStore.userInfo.avatarVersion = version
+                    }
+                })
+            }
+            input.setAttribute('type', 'file')
+            input.click()
         }
 
         function onExit() {
@@ -197,10 +229,11 @@ export default defineComponent({
 
 
         function onEditSubmit() {
-            putInfo(editInfo.nickname)
+            putInfo(editInfo.nickname, editInfo.avatarType)
                 .then(response => {
                     if (response.code === 20000) {
                         userStore.userInfo.nickname = editInfo.nickname
+                        userStore.userInfo.avatarType = editInfo.avatarType
                         visibleSetting.value = false
                         editInfo.nickname = ''
                     }
@@ -226,6 +259,10 @@ export default defineComponent({
 
         function generateFileUrl(chatId, type) {
             return join(VUE_BASE, `/chat/upload?token=${getToken()}&friendId=${selectUserId.value}&chatId=${chatId}&type=${type}`)
+        }
+
+        function generateAvatarUrl(userId, avatarVersion) {
+            return join(VUE_BASE, `/upload/avatar?id=${userId}&v=${avatarVersion}`)
         }
 
         const isDragenter = ref(false)
@@ -272,6 +309,8 @@ export default defineComponent({
 
             info,
             editInfo,
+            onEditInfoAvatarTypeChange,
+            onUploadAvatar,
             onEditSubmit,
             friendList,
             friendListComputed,
@@ -293,6 +332,7 @@ export default defineComponent({
             onUploadFile,
             chatType,
             generateFileUrl,
+            generateAvatarUrl,
 
             onExit,
 

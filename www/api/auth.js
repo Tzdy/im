@@ -30,12 +30,13 @@ export function info() {
     })
 }
 
-export function putInfo(nickname) {
+export function putInfo(nickname, avatarType) {
     return request({
         url: '/info',
         method: 'put',
         data: {
             nickname,
+            avatarType,
         }
     })
 }
@@ -44,5 +45,15 @@ export function getAllUserNotMyself() {
     return request({
         url: '/user/all',
         method: 'get',
+    })
+}
+
+export function postUploadAvatar(file) {
+    const formData = new FormData()
+    formData.append('avatar', file)
+    return request({
+        url: '/upload/avatar',
+        method: 'post',
+        data: formData,
     })
 }
