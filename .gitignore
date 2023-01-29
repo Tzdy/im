@@ -3,3 +3,4 @@ node_modules
 upload
 avatar
 www/config.js
+.Ds_Store

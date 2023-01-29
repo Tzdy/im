@@ -262,7 +262,7 @@
                                 style="width: 40px; height: 40px;line-height: 40px;">{{ item.nickname[0] }}</div>
                             <div :style="{direction: 'ltr', [item.user_id !== info.userId ? 'marginLeft' : 'marginRight']: '16px', [item.user_id !== info.userId ? 'marginRight' : 'marginLeft']: '90px' }"
                                 class="content p-2 rounded" :class="contentClass(item.user_id, item.type)">
-                                <span v-if="item.type === chatType.TEXT">{{ item.content }}</span>
+                                <span v-if="item.type === chatType.TEXT" v-link>{{ item.content }}</span>
                                 <div v-else-if="item.type === chatType.IMAGE">
                                     <div class="p-2" style="width: 300px; height: 200px;"
                                         v-if="item.user_id === info.userId && !item.id">
@@ -358,10 +358,19 @@
         <index-main v-if="!loading" />
     </div>
 </body>
+<script src="./public/js/linkify.min.js"></script>
+<script src="./public//js/linkify-element.min.js"></script>
+<script src="./public/js/linkify-plugin-ip.min.js"></script>
 <script type="module">
     import Vue from './public/js/vue.esm.js'
     import { useAuthMiddleware } from './middleware/auth.js'
     import IndexMain from './views/IndexMain.js'
+    Vue.directive('link', {
+        // 当被绑定的元素插入到 DOM 中时……
+        inserted: function (el) {
+            el.parentElement.replaceChild(el, linkifyElement(el))
+        }
+    })
 
     new Vue({
         el: '#App',
