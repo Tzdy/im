@@ -9,9 +9,9 @@ export const chatStore = reactive({
     userChat: {}
 })
 
-export const nicknameMap = computed(() => {
+export const userMap = computed(() => {
     return chatStore.friendList.concat(userStore.userInfo).reduce((a, b) => {
-        a[b.userId] = b.nickname
+        a[b.userId] = b
         return a
     }, {})
 })
@@ -58,7 +58,9 @@ export function getMessage(friendId, page, pageSize) {
             .then(response => {
                 if (response.code === 20000) {
                     set(chatStore.userChat, friendId, response.data.list.map(item => ({
-                        nickname: nicknameMap.value[item.user_id],
+                        nickname: userMap.value[item.user_id].nickname,
+                        avatarType: userMap.value[item.user_id].avatarType,
+                        avatarVersion: userMap.value[item.user_id].avatarVersion,
                         __load: false,
                         ...item
                     })))
@@ -92,7 +94,9 @@ export function sendMessage(friendId, content, type = chatType.TEXT) {
                     "created_time": response.data.createdTime,
                 }
                 chatStore.userChat[friendId].push({
-                    nickname: nicknameMap.value[item.user_id],
+                    nickname: userMap.value[item.user_id].nickname,
+                    avatarType: userMap.value[item.user_id].avatarType,
+                    avatarVersion: userMap.value[item.user_id].avatarVersion,
                     __load: false,
                     ...item
                 })
@@ -112,7 +116,9 @@ export function sendUploadMessage(friendId, file, type = chatType.IMAGE) {
         loaded: 0
     }
     chatStore.userChat[friendId].push({
-        nickname: nicknameMap.value[item.user_id],
+        nickname: userMap.value[item.user_id].nickname,
+        avatarType: userMap.value[item.user_id].avatarType,
+        avatarVersion: userMap.value[item.user_id].avatarVersion,
         __load: false,
         loaded: 0,
         ...item

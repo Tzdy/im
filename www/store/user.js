@@ -7,6 +7,8 @@ export const userStore = reactive({
     userInfo: {
         userId: -1,
         nickname: '',
+        avatarVersion: 0,
+        avatarType: 0,
     }
 })
 
@@ -34,6 +36,8 @@ export function info() {
             if (response.code === 20000) {
                 userStore.userInfo.userId = response.data.info.id
                 userStore.userInfo.nickname = response.data.info.nickname
+                userStore.userInfo.avatarType = response.data.info.avatar_type
+                userStore.userInfo.avatarVersion = response.data.info.avatar_version
             }
         })
 }

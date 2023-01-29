@@ -26,7 +26,7 @@ instance.interceptors.response.use(function (response) {
     return response.data;
 }, function (error) {
     if (error.response.status === 401) {
-        return goLogin(error.response.data.message)
+        goLogin(error.response.data.message)
     }
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     // Do something with response error

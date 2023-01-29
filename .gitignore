@@ -1,4 +1,6 @@
 node_modules
 *.local
 upload
+avatar
 www/config.js
+.Ds_Store
