@@ -187,9 +187,12 @@
                         :avatar="(item.avatarType === 1 && item.avatarVersion !== 0) ? generateAvatarUrl(item.userId, item.avatarVersion) : ''"
                         :content="item.content" v-for="item in friendListComputed" :key="item.userId" />
                 </div>
-                <div style="height: 48px;" class="flex-shrink-0 flex-grow-0 px-2">
+                <div style="height: 48px;" class="flex-shrink-0 flex-grow-0 px-2 d-flex align-items-center">
                     <button @click="onOpenSetting" class="btn btn-primary" type="button">设置</button>
                     <button @click="onExit" class="btn btn-danger ms-2" type="button">退出</button>
+                    <span v-if="isAlive" class="badge text-bg-success me-0 ms-auto">在线</span>
+                    <span v-else style="cursor: pointer;" @click="onReOpenWs"
+                        class="badge text-bg-secondary me-0 ms-auto">离线</span>
                 </div>
             </div>
 
@@ -291,7 +294,7 @@
                                             :src="generateFileUrl(item.id, item.type)" alt="">
                                     </a>
                                 </div>
-                                <div v-else-if="item.type === chatType.FILE" style="width: 282px;" class="p-2">
+                                <div v-else-if="item.type === chatType.FILE" style="width: 282px;" class="p-2 bg-white">
                                     <div>{{ item.content }}</div>
                                     <div v-if="item.user_id === info.userId && !item.id">
                                         <div class="progress" role="progressbar">
@@ -368,7 +371,11 @@
     Vue.directive('link', {
         // 当被绑定的元素插入到 DOM 中时……
         inserted: function (el) {
-            el.parentElement.replaceChild(el, linkifyElement(el))
+            el.parentElement.replaceChild(el, linkifyElement(el, {
+                attributes: {
+                    target: '_blank'
+                }
+            }))
         }
     })
 
