@@ -9,7 +9,8 @@ export const userStore = reactive({
         nickname: '',
         avatarVersion: 0,
         avatarType: 0,
-    }
+    },
+    isAlive: false,
 })
 
 export function login(username, password) {

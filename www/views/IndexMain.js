@@ -19,7 +19,13 @@ export default defineComponent({
     },
     setup() {
         openWs()
+
+        function onReOpenWs() {
+            openWs()
+        }
+
         const info = computed(() => userStore.userInfo)
+        const isAlive = computed(() => userStore.isAlive)
         const editInfo = reactive({
             nickname: '',
             avatarType: -1,
@@ -342,6 +348,9 @@ export default defineComponent({
             isDragenter,
 
             chatStore,
+
+            isAlive,
+            onReOpenWs,
         }
     }
 })
