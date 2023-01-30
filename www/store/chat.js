@@ -113,16 +113,13 @@ export function sendUploadMessage(friendId, file, type = chatType.IMAGE) {
         content: file.name,
         type,
         "created_time": Date.now(),
-        loaded: 0
-    }
-    chatStore.userChat[friendId].push({
-        nickname: userMap.value[item.user_id].nickname,
-        avatarType: userMap.value[item.user_id].avatarType,
-        avatarVersion: userMap.value[item.user_id].avatarVersion,
-        __load: false,
         loaded: 0,
-        ...item
-    })
+        nickname: userMap.value[userStore.userInfo.userId].nickname,
+        avatarType: userMap.value[userStore.userInfo.userId].avatarType,
+        avatarVersion: userMap.value[userStore.userInfo.userId].avatarVersion,
+        __load: false,
+    }
+    chatStore.userChat[friendId].push(item)
     function loadCallback(e) {
         item.loaded = `${parseInt((e.loaded / e.total) * 100, 0)}%`
     }
