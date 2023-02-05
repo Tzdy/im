@@ -1,13 +1,14 @@
 import request from '../util/request.js'
 
-export function getChat(friendId, page, pageSize) {
+export function getChat(friendId, page, pageSize, type) {
     return request({
         url: '/chat',
         method: 'get',
         params: {
             friendId,
             page,
-            pageSize
+            pageSize,
+            type,
         }
     })
 }

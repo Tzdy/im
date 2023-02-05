@@ -147,6 +147,35 @@
 </head>
 
 <body>
+    <template id="dialog">
+        <div @click="onClose" :style="{display: visible ? 'block' : 'none'}" class="modal">
+            <div :class="{ show: visible }" @click.stop class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5">{{ title }}</h1>
+                        <button @click="onClose" type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <slot name="body"></slot>
+                    </div>
+                    <div class="modal-footer">
+                        <slot name="footer"></slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="nav-tab">
+        <ul class="nav nav-tabs">
+            <li style="user-select: none;" @click="onSelect(index)" v-for="(item,index) in items" :key="index"
+                class="nav-item">
+                <a :class="{ active: selectIndex === index }" class="nav-link">{{ item }}</a>
+            </li>
+        </ul>
+    </template>
+
     <template id="user-card">
         <div :style="selectStyle" class="d-flex overflow-auto">
             <div class="rounded position-relative flex-grow-0 flex-shrink-0 me-2" style="width: 40px; height: 40px;">
@@ -328,7 +357,8 @@
                             class="flex-shrink-0 ms-4" role="img">
                             <use xlink:href="#icon-file" />
                         </svg>
-                        <svg style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;"
+                        <svg @click="onOpenChatNote"
+                            style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;"
                             class="flex-shrink-0 ms-4 me-auto" role="img">
                             <use xlink:href="#icon-history" />
                         </svg>
@@ -351,6 +381,34 @@
                     </div>
                 </div>
             </div>
+            <!-- 聊天记录 -->
+            <b-dialog :visible.sync="chatNoteVisible" title="聊天记录">
+                <template v-slot:body>
+                    <div class="w-100 d-flex flex-column">
+                        <form>
+                            <div class="mb-2">
+                                <label for="chat-note-search" class="col-form-label">搜索:</label>
+                                <input v-model="chatNoteSearchInput" type="text" class="form-control"
+                                    id="chat-note-search">
+                            </div>
+                        </form>
+                        <b-nav-tab :items="chatTabList" @select="onChatTabSelect" />
+                        <div class="d-flex overflow-auto">
+                            <div class="rounded position-relative flex-grow-0 flex-shrink-0 me-2"
+                                style="width: 40px; height: 40px;">
+                                <img v-if="avatar" class="rounded" width="40" height="40" :src="avatar" alt="">
+                                <div v-else class="bg-light w-100 h-100 rounded text-center shadow-sm"
+                                    style="line-height: 40px;">{{
+                                    nickname[0]
+                                    }}</div>
+                            </div>
+                            <div class="flex-group-1 w-100"></div>
+                            <div style="width: 100px;">
+                                2022</div>
+                        </div>
+                    </div>
+                </template>
+            </b-dialog>
         </div>
     </template>
 

@@ -11,11 +11,16 @@ import { getToken } from '../util/storage.js'
 import { throttling } from '../util/throttling.js'
 import { relativeTimeFormat } from '../util/timeFormat.js'
 import UserCard from '../components/UserCard.js'
+import BDialog from '../components/BDialog.js'
+import BNavTab from '../components/BNavTab.js'
+import { getChat } from '../api/chat.js'
 
 export default defineComponent({
     template: '#index-main',
     components: {
         UserCard,
+        BDialog,
+        BNavTab,
     },
     setup() {
         openWs()
@@ -309,6 +314,27 @@ export default defineComponent({
             }
         }
 
+        // 聊天记录
+        const chatTabList = ["全部", '文件', '图片']
+        const chatTabIndex = ref(0)
+        const chatNoteVisible = ref(false)
+        const chatNoteSearchInput = ref('')
+        const chatNoteList = ref([])
+        function fetchChatNoteList(friendId, type) {
+            getChat(friendId, undefined, undefined, type)
+                .then(res => {
+                    if (res.code === 20000) {
+                        console.log(res.data)
+                    }
+                })
+        }
+        function onOpenChatNote() {
+            fetchChatNoteList(selectUserId.value, undefined)
+            chatNoteVisible.value = true
+        }
+        function onChatTabSelect(index) {
+            chatTabIndex.value = index
+        }
         return {
             relativeTimeFormat,
             isDisplayTime,
@@ -351,6 +377,14 @@ export default defineComponent({
 
             isAlive,
             onReOpenWs,
+
+            chatNoteVisible,
+            chatNoteSearchInput,
+            onOpenChatNote,
+            chatTabIndex,
+            onChatTabSelect,
+            chatTabList,
+            chatNoteList,
         }
     }
 })

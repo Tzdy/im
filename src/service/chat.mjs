@@ -1,4 +1,4 @@
-import { chatType, createOneChat, findChatByUserId } from "../model/chat.mjs";
+import { chatType, createOneChat, findChatByUserId, findChatNotPage, findChatNotPageCase1 } from "../model/chat.mjs";
 import { startTransaction } from "../model/index.mjs";
 import { createOneUpload, findOneUpload } from "../model/upload.mjs";
 import { HttpOKException } from "../util/exception.mjs";
@@ -38,11 +38,19 @@ export async function postChat(userId, friendId, content) {
         }
     }
 }
-export async function getChat(userId, friendId, page, pageSize) {
+export async function getChat(userId, friendId, page, pageSize, type) {
+    let list = []
+    if (Number.isInteger(page) && Number.isInteger(pageSize)) {
+        list = (await findChatByUserId(userId, friendId, page, pageSize)).reverse()
+    } else if (Number.isInteger(type)) {
+        list = await findChatNotPage(userId, friendId, type)
+    } else if (type === null) {
+        list = await findChatNotPageCase1(userId, friendId)
+    }
     return {
         code: 20000,
         data: {
-            list: (await findChatByUserId(userId, friendId, page, pageSize)).reverse()
+            list,
         }
     }
 }

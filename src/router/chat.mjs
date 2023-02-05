@@ -7,6 +7,7 @@ import { TokenMiddleWare } from '../middleware/jwt.mjs'
 import { getChat, getChatUpload, postChat, postChatUpload } from '../service/chat.mjs'
 import { chatType } from '../model/chat.mjs';
 import { verify } from '../util/jwt.mjs';
+import { number } from '../util/type.mjs';
 
 const router = Router()
 
@@ -22,10 +23,11 @@ router.delete('/chat', (req, res) => {
 
 router.get('/chat', TokenMiddleWare, asyncException(async (req, res) => {
     const id = req.user.id
-    const friendId = Number(req.query.friendId)
-    const page = Number(req.query.page)
-    const pageSize = Number(req.query.pageSize)
-    res.send(await getChat(id, friendId, page, pageSize))
+    const friendId = number(req.query.friendId, true)
+    const page = number(req.query.page)
+    const pageSize = number(req.query.pageSize)
+    const type = number(req.query.type)
+    res.send(await getChat(id, friendId, page, pageSize, type))
 }))
 
 const upload = multer({
