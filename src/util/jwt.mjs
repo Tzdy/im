@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken'
  *
  * 详情参考：https://github.com/vercel/ms
  */
-export const maxAge = '1d' // 一天
+export const maxAge = process.env.JWT_EXPIRES
 
 export function sign(payload) {
     return jwt.sign(
