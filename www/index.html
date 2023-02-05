@@ -179,7 +179,7 @@
     <template id="index-main">
         <div class="container-main">
             <div class="sidebar overflow-auto border-end border-secondary-subtle">
-                <div class="flex-fill h-100">
+                <div class="flex-fill h-100 overflow-auto">
                     <user-card @click.native="onSelect(item.userId, item.contentCreatedTime)" class="p-2 mt-2"
                         :selected="selectUserId === item.userId" :nickname="item.nickname"
                         :content-created-time="item.contentCreatedTime" :has-new-alert="item.hasNewAlert"
@@ -303,8 +303,7 @@
                                         </div>
                                     </div>
                                     <div v-else-if="item.id" class="text-end">
-                                        <a style="font-size: 12px;" :href="generateFileUrl(item.id, item.type)"
-                                            target="_blank">
+                                        <a style="font-size: 12px;" :href="generateFileUrl(item.id, item.type)">
                                             <span>点击下载</span>
                                         </a>
                                     </div>
