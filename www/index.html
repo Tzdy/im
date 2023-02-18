@@ -384,7 +384,7 @@
             <!-- 聊天记录 -->
             <b-dialog :visible.sync="chatNoteVisible" title="聊天记录">
                 <template v-slot:body>
-                    <div class="w-100 d-flex flex-column">
+                    <div class="w-100 d-flex flex-column" style="max-height: 65vh;">
                         <form>
                             <div class="mb-2">
                                 <label for="chat-note-search" class="col-form-label">搜索:</label>
@@ -392,19 +392,28 @@
                                     id="chat-note-search">
                             </div>
                         </form>
-                        <b-nav-tab :items="chatTabList" @select="onChatTabSelect" />
-                        <div class="d-flex overflow-auto">
-                            <div class="rounded position-relative flex-grow-0 flex-shrink-0 me-2"
-                                style="width: 40px; height: 40px;">
-                                <img v-if="avatar" class="rounded" width="40" height="40" :src="avatar" alt="">
-                                <div v-else class="bg-light w-100 h-100 rounded text-center shadow-sm"
-                                    style="line-height: 40px;">{{
-                                    nickname[0]
-                                    }}</div>
+                        <b-nav-tab :items="chatTabList" @select="onChatTabSelect"></b-nav-tab>
+                        <div ref="chatNoteContentElement" @scroll="onChatNoteScroll"
+                            :class="{'overflow-auto': !chatNoteLoading, 'overflow-hidden': chatNoteLoading}">
+                            <div v-for="chat in chatNoteList" :key="chat.id" class="d-flex mb-4">
+                                <div class="rounded position-relative flex-grow-0 flex-shrink-0 me-2"
+                                    style="width: 40px; height: 40px;">
+                                    <img v-if="chat.avatarType === 1 && chat.avatarVersion !== 0" class="rounded"
+                                        width="40" height="40" :src="chat.avatar" alt="">
+                                    <div v-else class="bg-light w-100 h-100 rounded text-center shadow-sm"
+                                        style="line-height: 40px;">{{
+                                        chat.nickname[0]
+                                        }}</div>
+                                </div>
+                                <div class="flex-grow-1 w-100">
+                                    <div class="d-flex">
+                                        <div style="font-size: 12px;">{{ chat.nickname }}</div>
+                                        <div class="ms-auto me-2" style="width: 100px; font-size: 12px;">{{
+                                            relativeTimeFormat(chat.created_time) }}</div>
+                                    </div>
+                                    <div style="background: #eff0f1;">{{ chat.content }}</div>
+                                </div>
                             </div>
-                            <div class="flex-group-1 w-100"></div>
-                            <div style="width: 100px;">
-                                2022</div>
                         </div>
                     </div>
                 </template>

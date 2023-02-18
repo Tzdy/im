@@ -320,20 +320,74 @@ export default defineComponent({
         const chatNoteVisible = ref(false)
         const chatNoteSearchInput = ref('')
         const chatNoteList = ref([])
-        function fetchChatNoteList(friendId, type) {
-            getChat(friendId, undefined, undefined, type)
+        const chatNotePage = ref(1)
+        const chatNotePageSize = ref(20)
+        const chatNoteContentElement = ref(null)
+        const chatNoteLoading = ref(false)
+        let fetchEnd = false
+        function fetchChatNoteList() {
+            chatNoteLoading.value = true
+            let type = undefined
+            if (chatTabIndex.value === 0) {
+                type = undefined
+            } else if (chatTabIndex.value === 1) {
+                type = chatType.FILE
+            } else if (chatTabIndex.value === 2) {
+                type = chatType.IMAGE
+            }
+            getChat(selectUserId.value, chatNotePage.value, chatNotePageSize.value, type)
                 .then(res => {
                     if (res.code === 20000) {
-                        console.log(res.data)
+                        if (res.data.list.length === 0) {
+                            fetchEnd = true
+                            return
+                        }
+                        chatNotePage.value++
+                        const isFirstFetch = chatNoteList.value.length === 0
+                        chatNoteList.value = res.data.list.map(item => {
+                            return {
+                                avatar: generateAvatarUrl(item.user_id),
+                                nickname: userMap.value[item.user_id].nickname,
+                                avatarType: userMap.value[item.user_id].avatarType,
+                                avatarVersion: userMap.value[item.user_id].avatarVersion,
+                                ...item
+                            }
+                        }).concat(chatNoteList.value)
+                        // 第一次请求才需要到底部
+                        if (isFirstFetch) {
+                            nextTick(() => {
+                                chatNoteContentElement.value.scrollTop = chatNoteContentElement.value.scrollHeight
+                            })
+                        }
+
                     }
+                })
+                .finally(() => {
+                    chatNoteLoading.value = false
                 })
         }
         function onOpenChatNote() {
+            fetchEnd = false
+            chatNoteList.value = []
+            chatTabIndex.value = 0
+            chatNotePage.value = 1
             fetchChatNoteList(selectUserId.value, undefined)
             chatNoteVisible.value = true
         }
         function onChatTabSelect(index) {
+            fetchEnd = false
+            chatNoteList.value = []
+            chatNotePage.value = 1
             chatTabIndex.value = index
+            fetchChatNoteList()
+        }
+        function onChatNoteScroll() {
+            if (chatNoteLoading.value || fetchEnd) {
+                return
+            }
+            if (chatNoteContentElement.value.scrollTop < 200) {
+                fetchChatNoteList()
+            }
         }
         return {
             relativeTimeFormat,
@@ -385,6 +439,9 @@ export default defineComponent({
             onChatTabSelect,
             chatTabList,
             chatNoteList,
+            chatNoteLoading,
+            chatNoteContentElement,
+            onChatNoteScroll,
         }
     }
 })
