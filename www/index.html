@@ -117,6 +117,70 @@
 
 
         }
+
+        .content-box:hover .content-box-operate {
+            opacity: 1;
+        }
+
+        .content-box-operate {
+            opacity: 0;
+            transition: opacity .3s
+        }
+
+        .tooltip-custom {
+            position: relative;
+        }
+
+        .tooltip-custom::before {
+            position: absolute;
+            z-index: 1000001;
+            display: none;
+            width: 0;
+            height: 0;
+            color: rgb(36, 41, 47);
+            pointer-events: none;
+            content: "";
+            border: 6px solid transparent;
+            opacity: 0;
+            top: -7px;
+            right: 50%;
+            bottom: auto;
+            margin-right: -6px;
+            border-top-color: rgb(36, 41, 47);
+        }
+
+        .tooltip-custom:hover:before {
+            display: block;
+        }
+
+        .tooltip-custom::after {
+            position: absolute;
+            z-index: 1000000;
+            display: none;
+            font-size: 12px;
+            padding: 0.5em 0.75em;
+            -webkit-font-smoothing: subpixel-antialiased;
+            color: #ffffff;
+            text-align: center;
+            text-decoration: none;
+            text-shadow: none;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: break-word;
+            white-space: pre;
+            pointer-events: none;
+            content: attr(aria-label);
+            background: rgb(36, 41, 47);
+            border-radius: 6px;
+            right: 50%;
+            bottom: 100%;
+            margin-bottom: 6px;
+            transform: translateX(50%);
+        }
+
+        .tooltip-custom:hover::after {
+            display: block;
+        }
     </style>
     <svg class="d-none" xmlns="http://www.w3.org/2000/svg">
         <symbol id="icon-image" viewBox="0 0 16 16">
@@ -143,16 +207,35 @@
             <path fill-rule="evenodd"
                 d="M7.646 4.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V14.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3z" />
         </symbol>
+        <symbol id="icon-clipboard" viewBox="0 0 16 16">
+            <path
+                d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z">
+            </path>
+            <path
+                d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z">
+            </path>
+        </symbol>
+        <symbol id="icon-check" viewBox="0 0 16 16">
+            <path
+                d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z">
+            </path>
+        </symbol>
+        <symbol id="icon-eye" viewBox="0 0 16 16">
+            <path
+                d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z" />
+            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z" />
+        </symbol>
+
     </svg>
 </head>
 
 <body>
     <template id="dialog">
         <div @click="onClose" :style="{display: visible ? 'block' : 'none'}" class="modal">
-            <div :class="{ show: visible }" @click.stop class="modal-dialog modal-lg">
+            <div :class="{ show: visible, [size]: true }" @click.stop class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5">{{ title }}</h1>
+                        <h1 style="user-select: none;" class="modal-title fs-5">{{ title }}</h1>
                         <button @click="onClose" type="button" class="btn-close" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                     </div>
@@ -176,8 +259,20 @@
         </ul>
     </template>
 
+    <style>
+        .user-card[user-card] {
+            transition: background .3s;
+            user-select: none;
+            width: 97%;
+            border-radius: 4px;
+        }
+
+        .user-card[user-card]:hover {
+            background-color: rgba(208, 215, 222, .32);
+        }
+    </style>
     <template id="user-card">
-        <div :style="selectStyle" class="d-flex overflow-auto">
+        <div :style="selectStyle" class="d-flex overflow-auto user-card" user-card>
             <div class="rounded position-relative flex-grow-0 flex-shrink-0 me-2" style="width: 40px; height: 40px;">
                 <img v-if="avatar" class="rounded" width="40" height="40" :src="avatar" alt="">
                 <div v-else class="bg-light w-100 h-100 rounded text-center shadow-sm" style="line-height: 40px;">{{
@@ -208,8 +303,8 @@
     <template id="index-main">
         <div class="container-main">
             <div class="sidebar overflow-auto border-end border-secondary-subtle">
-                <div class="flex-fill h-100 overflow-auto">
-                    <user-card @click.native="onSelect(item.userId, item.contentCreatedTime)" class="p-2 mt-2"
+                <div class="d-flex flex-column align-items-center flex-fill h-100 overflow-auto">
+                    <user-card @click.native="onSelect(item.userId, item.contentCreatedTime)" class="p-2 mt-1"
                         :selected="selectUserId === item.userId" :nickname="item.nickname"
                         :content-created-time="item.contentCreatedTime" :has-new-alert="item.hasNewAlert"
                         :is-online="item.isOnline"
@@ -276,68 +371,97 @@
             <div v-if="!isSelectChat" class="main">
                 <h1>Welcome</h1>
             </div>
-            <div v-else class="main">
+            <div v-else class="main overflow-auto">
                 <div ref="chatBoxElement" @scroll="onScrollChat"
                     :style="{scrollBehavior: scrollSmooth ? 'smooth' : 'auto'}" style="will-change: scroll-position;"
                     class="chat-box position-relative">
                     <!-- 聊天盒子 -->
-                    <div v-for="item,index in chatStore.userChat[selectUserId]" :key="item.id">
+                    <div class="content-box" v-for="item,index in chatStore.userChat[selectUserId]" :key="item.id">
                         <div v-if="isDisplayTime(chatStore.userChat[selectUserId], index)"
                             class="text-center text-secondary-emphasis" style="font-size: 12px;">{{
                             relativeTimeFormat(item.created_time) }}</div>
+                        <!-- 复制/预览 -->
+                        <div :style="{direction: item.user_id !== info.userId ? 'ltr' : 'rtl', [item.user_id !== info.userId ? 'marginLeft' : 'marginRight']: '64px' }"
+                            class="px-2 content-box-operate" v-if="item.type === chatType.TEXT">
+                            <span class="d-inline-block flex-shrink-0 ms-auto tooltip-custom"
+                                v-if="!item.clipboardActive" aria-label="Copy to Clipboard"
+                                @click="onClipboard(item, $event)()">
+                                <svg style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;" role="img">
+                                    <use xlink:href="#icon-clipboard" />
+                                </svg>
+                            </span>
+                            <span @click="onClipboard(item, $event)()" v-else aria-label="Copied"
+                                class="flex-shrink-0 ms-auto tooltip-custom">
+                                <svg style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;" role="img">
+                                    <use xlink:href="#icon-check" />
+                                </svg>
+                            </span>
+                            <span @click="onViewText(item)" style="text-indent: 4px;" class="d-inline-block">
+                                <svg style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;" role="img">
+                                    <use xlink:href="#icon-eye" />
+                                </svg>
+                            </span>
+                        </div>
                         <!-- 气泡 -->
                         <div :style="{direction: item.user_id !== info.userId ? 'ltr' : 'rtl', minHeight: '64px'}"
-                            class="p-3 mb-4 d-flex">
+                            class="px-3 pb-3 mb-4 d-flex">
                             <img v-if="item.avatarType === 1 && item.avatarVersion !== 0" class="rounded" width="40"
                                 height="40" :src="generateAvatarUrl(item.user_id, item.avatarVersion)" alt="">
                             <div v-else class="bg-body rounded text-center shadow-sm flex-shrink-0"
                                 style="width: 40px; height: 40px;line-height: 40px;">{{ item.nickname[0] }}</div>
-                            <div :style="{direction: 'ltr', [item.user_id !== info.userId ? 'marginLeft' : 'marginRight']: '16px', [item.user_id !== info.userId ? 'marginRight' : 'marginLeft']: '90px' }"
-                                class="content p-2 rounded" :class="contentClass(item.user_id, item.type)">
-                                <span v-if="item.type === chatType.TEXT" v-link>{{ item.content }}</span>
-                                <div v-else-if="item.type === chatType.IMAGE">
-                                    <div class="p-2" style="width: 300px; height: 200px;"
-                                        v-if="item.user_id === info.userId && !item.id">
-                                        <div>{{ item.content }}</div>
-                                        <div class="progress" role="progressbar">
-                                            <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                                :style="{ width: item.loaded }"></div>
+                            <div class="overflow-auto">
+                                <!-- 内容 -->
+                                <div :style="{direction: 'ltr', [item.user_id !== info.userId ? 'marginLeft' : 'marginRight']: '16px', [item.user_id !== info.userId ? 'marginRight' : 'marginLeft']: '90px' }"
+                                    class="content p-2 rounded overflow-auto"
+                                    :class="contentClass(item.user_id, item.type)">
+                                    <pre class="content-clip" style="max-height: 400px;"
+                                        v-if="item.type === chatType.TEXT" v-link>{{ item.content }}</pre>
+                                    <div v-else-if="item.type === chatType.IMAGE">
+                                        <div class="p-2" style="width: 300px; height: 200px;"
+                                            v-if="item.user_id === info.userId && !item.id">
+                                            <div>{{ item.content }}</div>
+                                            <div class="progress" role="progressbar">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                    :style="{ width: item.loaded }"></div>
+                                            </div>
                                         </div>
+                                        <a v-if="item.id" class="text-white d-inline-block"
+                                            :class="{'bg-secondary': !item.__load}" style="text-decoration: none;"
+                                            :href="generateFileUrl(item.id, item.type)" target="_blank">
+                                            <!-- 上传中 -->
+                                            <div v-if="item.user_id === info.userId && !item.id">
+                                                <div class="progress" role="progressbar">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                        :style="{ width: item.loaded }"></div>
+                                                </div>
+                                            </div>
+                                            <div style="width: 300px; height: 200px; line-height: 100px;"
+                                                class="text-center" v-show="!item.__load">
+                                                <span>Loading...</span>
+                                            </div>
+                                            <img v-show="item.__load" @load="$set(item, '__load', true)"
+                                                style="max-width: 300px; max-height: 200px;"
+                                                :src="generateFileUrl(item.id, item.type)" alt="">
+                                        </a>
                                     </div>
-                                    <a v-if="item.id" class="text-white d-inline-block"
-                                        :class="{'bg-secondary': !item.__load}" style="text-decoration: none;"
-                                        :href="generateFileUrl(item.id, item.type)" target="_blank">
-                                        <!-- 上传中 -->
+                                    <div v-else-if="item.type === chatType.FILE" style="width: 282px;"
+                                        class="p-2 bg-white">
+                                        <div>{{ item.content }}</div>
                                         <div v-if="item.user_id === info.userId && !item.id">
                                             <div class="progress" role="progressbar">
                                                 <div class="progress-bar progress-bar-striped progress-bar-animated"
                                                     :style="{ width: item.loaded }"></div>
                                             </div>
                                         </div>
-                                        <div style="width: 300px; height: 200px; line-height: 100px;"
-                                            class="text-center" v-show="!item.__load">
-                                            <span>Loading...</span>
+                                        <div v-else-if="item.id" class="text-end">
+                                            <a style="font-size: 12px;" :href="generateFileUrl(item.id, item.type)">
+                                                <span>点击下载</span>
+                                            </a>
                                         </div>
-                                        <img v-show="item.__load" @load="$set(item, '__load', true)"
-                                            style="max-width: 300px; max-height: 200px;"
-                                            :src="generateFileUrl(item.id, item.type)" alt="">
-                                    </a>
-                                </div>
-                                <div v-else-if="item.type === chatType.FILE" style="width: 282px;" class="p-2 bg-white">
-                                    <div>{{ item.content }}</div>
-                                    <div v-if="item.user_id === info.userId && !item.id">
-                                        <div class="progress" role="progressbar">
-                                            <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                                :style="{ width: item.loaded }"></div>
-                                        </div>
-                                    </div>
-                                    <div v-else-if="item.id" class="text-end">
-                                        <a style="font-size: 12px;" :href="generateFileUrl(item.id, item.type)">
-                                            <span>点击下载</span>
-                                        </a>
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                     <div @click="onScrollChatToBottom" v-show="hasNewMsg"
@@ -382,7 +506,7 @@
                 </div>
             </div>
             <!-- 聊天记录 -->
-            <b-dialog :visible.sync="chatNoteVisible" title="聊天记录">
+            <b-dialog :visible.sync="chatNoteVisible" title="聊天记录" size="modal-lg">
                 <template v-slot:body>
                     <div class="w-100 d-flex flex-column" style="max-height: 65vh;">
                         <form>
@@ -416,6 +540,12 @@
                             </div>
                         </div>
                     </div>
+                </template>
+            </b-dialog>
+            <!-- 预览 -->
+            <b-dialog :visible.sync="textViewVisible" title="文本预览" size="modal-fullscreen">
+                <template v-slot:body>
+                    <pre>{{ textViewContent }}</pre>
                 </template>
             </b-dialog>
         </div>

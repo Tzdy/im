@@ -389,6 +389,36 @@ export default defineComponent({
                 fetchChatNoteList()
             }
         }
+
+        // clipboard
+        function onClipboard(item, e) {
+            let timer = null
+            return function () {
+                const preClipElement = e.currentTarget.parentElement.parentElement.querySelector('.content-clip')
+                const selection = window.getSelection()
+                const range = document.createRange()
+                range.selectNode(preClipElement)
+                selection.removeAllRanges()
+                selection.addRange(range)
+                document.execCommand('copy')
+                set(item, 'clipboardActive', true)
+                if (Number.isInteger(timer)) {
+                    clearTimeout(timer)
+                    timer = null
+                }
+                timer = setTimeout(() => {
+                    item.clipboardActive = false
+                }, 4000)
+            }
+        }
+        // 预览
+        const textViewVisible = ref(false)
+        const textViewContent = ref('')
+        function onViewText(item) {
+            textViewVisible.value = true
+            textViewContent.value = item.content
+        }
+
         return {
             relativeTimeFormat,
             isDisplayTime,
@@ -442,6 +472,11 @@ export default defineComponent({
             chatNoteLoading,
             chatNoteContentElement,
             onChatNoteScroll,
+
+            onClipboard,
+            onViewText,
+            textViewVisible,
+            textViewContent,
         }
     }
 })

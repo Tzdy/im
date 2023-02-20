@@ -5,6 +5,7 @@ export default defineComponent({
     props: {
         title: String,
         visible: Boolean,
+        size: String
     },
     setup(props, { emit }) {
 
