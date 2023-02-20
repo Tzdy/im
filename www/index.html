@@ -85,7 +85,6 @@
         .chat-box {
             height: 70%;
             width: 100%;
-            overflow: auto;
         }
 
         /* .chat {
@@ -375,7 +374,8 @@
             <div v-else class="main overflow-auto">
                 <div ref="chatBoxElement" @scroll="onScrollChat"
                     :style="{scrollBehavior: scrollSmooth ? 'smooth' : 'auto'}" style="will-change: scroll-position;"
-                    class="chat-box position-relative">
+                    class="chat-box position-relative"
+                    :class="{'overflow-auto': !fetchChatListLoading, 'overflow-hidden' : fetchChatListLoading}">
                     <!-- 聊天盒子 -->
                     <div class="content-box" v-for="item,index in chatStore.userChat[selectUserId]" :key="item.id">
                         <div v-if="isDisplayTime(chatStore.userChat[selectUserId], index)"

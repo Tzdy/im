@@ -2,7 +2,7 @@ import { ref, computed, reactive, nextTick, defineComponent, set } from '../publ
 import { join } from '../util/path.js'
 import { postUploadAvatar, putInfo } from '../api/auth.js'
 import { exit, userStore } from '../store/user.js'
-import { chatStore, getMessage, sendMessage, chatType, sendUploadMessage, fetchFriendList, userMap, setLatestChatTimeOne } from '../store/chat.js'
+import { chatStore, initMessage, sendMessage, chatType, sendUploadMessage, fetchFriendList, userMap, setLatestChatTimeOne, getMessage, sliceMessage } from '../store/chat.js'
 import { openWs, eventBus, STATUS, EVENT } from '../ws.js'
 import { goLogin } from '../router.js'
 import { notify } from '../util/notify.js'
@@ -64,14 +64,17 @@ export default defineComponent({
 
         const hasNewMsg = ref(false)
 
-        const onScrollChat = throttling(() => {
+        const onScrollChat = function () {
+            if (chatBoxElement.value.scrollTop < 200) {
+                fetchChatList()
+            }
             if (!hasNewMsg.value) {
                 return
             }
             if (chatBoxElement.value.scrollHeight - chatBoxElement.value.scrollTop < 1.5 * chatBoxElement.value.offsetHeight) {
                 hasNewMsg.value = false
             }
-        }, 600)
+        }
 
         function onScrollChatToBottom() {
             hasNewMsg.value = false
@@ -135,19 +138,47 @@ export default defineComponent({
         let page = 1
         const pageSize = 20
         const scrollSmooth = ref(true)
-
+        let fetchChatListInited = false
+        let fetchChatListLoadEnd = false
+        const fetchChatListLoading = ref(false)
         // 初次点击，或者切换会话
         function fetchChatList() {
-            return getMessage(selectUserId.value, page, pageSize)
-                .then(list => {
-                    if (list) {
-                        scrollSmooth.value = false
-                        nextTick(() => {
-                            chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
-                            scrollSmooth.value = true
-                        })
-                    }
-                })
+            if (fetchChatListLoading.value || fetchChatListLoadEnd) {
+                return
+            }
+            fetchChatListLoading.value = true
+            if (!fetchChatListInited) {
+                return initMessage(selectUserId.value, page, pageSize)
+                    .then(list => {
+                        if (list && list.length !== 0) {
+                            page++
+                            fetchChatListInited = true
+                            scrollSmooth.value = false
+                            nextTick(() => {
+                                chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
+                                scrollSmooth.value = true
+                            })
+
+                        } else {
+                            fetchChatListLoadEnd = true
+                        }
+                    })
+                    .finally(() => {
+                        fetchChatListLoading.value = false
+                    })
+            } else {
+                getMessage(selectUserId.value, page, pageSize)
+                    .then(chatList => {
+                        if (chatList.length !== 0) {
+                            page++
+                        } else {
+                            fetchChatListLoadEnd = true
+                        }
+                    })
+                    .finally(() => {
+                        fetchChatListLoading.value = false
+                    })
+            }
         }
         const selectUserId = ref(null)
 
@@ -174,6 +205,9 @@ export default defineComponent({
             if (selectUserId.value === id) {
                 return
             }
+            fetchChatListInited = false
+            fetchChatListLoadEnd = false
+            sliceMessage(selectUserId.value, pageSize)
             page = 1
             selectUserId.value = id
             // 清除头像上红点
@@ -420,6 +454,8 @@ export default defineComponent({
         }
 
         return {
+            fetchChatListLoading,
+
             relativeTimeFormat,
             isDisplayTime,
 

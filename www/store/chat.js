@@ -6,7 +6,7 @@ import { getLatestChatTime, setLatestChatTime } from '../util/storage.js'
 export const chatStore = reactive({
     friendList: [],
     latestChatTime: {},
-    userChat: {}
+    userChat: {},
 })
 
 export const userMap = computed(() => {
@@ -47,7 +47,7 @@ export function fetchFriendList() {
         })
 }
 
-export function getMessage(friendId, page, pageSize) {
+export function initMessage(friendId, page, pageSize) {
     if (chatStore.userChat[friendId]) {
         chatStore.userChat[friendId].forEach(item => {
             item.__load = false
@@ -67,6 +67,31 @@ export function getMessage(friendId, page, pageSize) {
                 }
                 return Promise.resolve(chatStore.userChat[friendId])
             })
+    }
+}
+export function getMessage(friendId, page, pageSize) {
+    return getChat(friendId, page, pageSize)
+        .then(response => {
+            if (response.code === 20000) {
+                const list = response.data.list.map(item => ({
+                    nickname: userMap.value[item.user_id].nickname,
+                    avatarType: userMap.value[item.user_id].avatarType,
+                    avatarVersion: userMap.value[item.user_id].avatarVersion,
+                    __load: false,
+                    ...item
+                }))
+                chatStore.userChat[friendId] = list.concat(chatStore.userChat[friendId])
+                return Promise.resolve(list)
+            }
+            return Promise.resolve([])
+        })
+}
+
+// 切换到其他friend的会话时，要清理当前会话
+export function sliceMessage(friendId, size) {
+    if (chatStore.userChat[friendId] instanceof Array) {
+        const chatList = chatStore.userChat[friendId]
+        chatStore.userChat[friendId] = chatList.slice(chatList.length - size < 0 ? 0 : chatList.length - size, chatList.length)
     }
 }
 
