@@ -277,7 +277,7 @@
         }
     </style>
     <template id="user-card">
-        <div :style="selectStyle" class="d-flex overflow-auto user-card" user-card>
+        <div :style="selectStyle" class="d-flex overflow-auto user-card flex-shrink-0" user-card>
             <div class="rounded position-relative flex-grow-0 flex-shrink-0 me-2" style="width: 40px; height: 40px;">
                 <img v-if="avatar" class="rounded" width="40" height="40" :src="avatar" alt="">
                 <div v-else class="bg-light w-100 h-100 rounded text-center shadow-sm" style="line-height: 40px;">{{

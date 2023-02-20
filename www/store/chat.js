@@ -109,6 +109,7 @@ export function sendMessage(friendId, content, type = chatType.TEXT) {
                 const friendIndex = chatStore.friendList.findIndex(item => item.userId === friendId)
                 if (friendIndex !== -1) {
                     chatStore.friendList[friendIndex].content = content
+                    chatStore.friendList[friendIndex].contentCreatedTime = response.data.createdTime
                 }
                 const item = {
                     id: response.data.chatId,
@@ -163,6 +164,7 @@ export function sendUploadMessage(friendId, file, type = chatType.IMAGE) {
                 const friendIndex = chatStore.friendList.findIndex(item => item.userId === friendId)
                 if (friendIndex !== -1) {
                     chatStore.friendList[friendIndex].content = file.name
+                    chatStore.friendList[friendIndex].contentCreatedTime = response.data.createdTime
                 }
                 setLatestChatTimeOne(friendId, response.data.createdTime)
             }
