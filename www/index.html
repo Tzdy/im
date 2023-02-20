@@ -263,6 +263,7 @@
         .user-card[user-card] {
             transition: background .3s;
             user-select: none;
+            cursor: pointer;
             width: 97%;
             border-radius: 4px;
         }
@@ -396,7 +397,8 @@
                                     <use xlink:href="#icon-check" />
                                 </svg>
                             </span>
-                            <span @click="onViewText(item)" style="text-indent: 4px;" class="d-inline-block">
+                            <span @click="onViewText(item)" style="text-indent: 4px;" aria-label="预览"
+                                class="d-inline-block flex-shrink-0 tooltip-custom">
                                 <svg style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;" role="img">
                                     <use xlink:href="#icon-eye" />
                                 </svg>
@@ -471,21 +473,28 @@
                 </div>
                 <div style="border-top-width: 2px !important;" class="edit-box border-top border-secondary-subtle">
                     <div class="d-flex align-items-center p-2">
-                        <svg @click="onUploadFile(chatType.IMAGE)"
-                            style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;"
-                            class="flex-shrink-0 ms-2" role="img">
-                            <use xlink:href="#icon-image" />
-                        </svg>
-                        <svg @click="onUploadFile(chatType.FILE)"
-                            style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;"
-                            class="flex-shrink-0 ms-4" role="img">
-                            <use xlink:href="#icon-file" />
-                        </svg>
-                        <svg @click="onOpenChatNote"
-                            style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;"
-                            class="flex-shrink-0 ms-4 me-auto" role="img">
-                            <use xlink:href="#icon-history" />
-                        </svg>
+                        <span @click="onViewText(item)" style="text-indent: 4px;" aria-label="图片"
+                            class="d-inline-block flex-shrink-0 ms-2 tooltip-custom">
+                            <svg @click="onUploadFile(chatType.IMAGE)"
+                                style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;" role="img">
+                                <use xlink:href="#icon-image" />
+                            </svg>
+                        </span>
+                        <span @click="onViewText(item)" style="text-indent: 4px;" aria-label="附件"
+                            class="d-inline-block flex-shrink-0 ms-4 tooltip-custom">
+                            <svg @click="onUploadFile(chatType.FILE)"
+                                style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;" role="img">
+                                <use xlink:href="#icon-file" />
+                            </svg>
+                        </span>
+                        <span @click="onViewText(item)" style="text-indent: 4px;" aria-label="聊天记录"
+                            class="d-inline-block flex-shrink-0 ms-4 me-auto tooltip-custom">
+                            <svg @click="onOpenChatNote"
+                                style="width: 18px; height: 18px; fill:currentColor; cursor: pointer;" role="img">
+                                <use xlink:href="#icon-history" />
+                            </svg>
+                        </span>
+
                         <button @click="onResetMessage" type="button"
                             class="btn btn-outline-warning ms-auto">重置</button>
                         <button @click="onSendMessage" type="button"
