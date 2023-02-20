@@ -405,7 +405,7 @@ export default defineComponent({
             chatNoteList.value = []
             chatTabIndex.value = 0
             chatNotePage.value = 1
-            fetchChatNoteList(selectUserId.value, undefined)
+            fetchChatNoteList()
             chatNoteVisible.value = true
         }
         function onChatTabSelect(index) {

@@ -11,8 +11,22 @@ export function createOneChat(userId, friendId, content, type, date, connection)
     return query(`INSERT INTO ${TABLE_NAME}(user_id, friend_id, content, type, created_time) VALUES(?, ?, ?, ?, ?)`, [userId, friendId, content, type, date], connection)
 }
 
-export function findChatByUserId(userId, friendId, page, pageSize) {
-    return query(`SELECT id, user_id, friend_id, content, type, created_time FROM ${TABLE_NAME} WHERE id <= (SELECT id FROM ${TABLE_NAME} WHERE ((user_id=? AND friend_id=?) OR (user_id=? AND friend_id=?)) ORDER BY id DESC LIMIT ?,1) AND ((user_id=? AND friend_id=?) OR (user_id=? AND friend_id=?)) ORDER BY id DESC LIMIT ?`, [userId, friendId, friendId, userId, (page - 1) * pageSize, userId, friendId, friendId, userId, pageSize])
+export function findChatByUserId(userId, friendId, page, pageSize, type) {
+    const array = [userId, friendId, friendId, userId, (page - 1) * pageSize, userId, friendId, friendId, userId]
+    function _type() {
+        if (type) {
+            array.push(type)
+            return `AND type=?`
+        } else {
+            return ''
+        }
+    }
+    const sql = `SELECT id, user_id, friend_id, content, type, created_time FROM ${TABLE_NAME} 
+    WHERE id <= (SELECT id FROM ${TABLE_NAME} WHERE ((user_id=? AND friend_id=?) OR (user_id=? AND friend_id=?)) ORDER BY id DESC LIMIT ?,1) AND ((user_id=? AND friend_id=?) OR (user_id=? AND friend_id=?)) 
+    ${_type()}
+    ORDER BY id DESC LIMIT ?`
+    array.push(pageSize)
+    return query(sql, array)
 }
 
 export function findChatNotPage(userId, friendId, type) {

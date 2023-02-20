@@ -39,14 +39,7 @@ export async function postChat(userId, friendId, content) {
     }
 }
 export async function getChat(userId, friendId, page, pageSize, type) {
-    let list = []
-    if (Number.isInteger(page) && Number.isInteger(pageSize)) {
-        list = (await findChatByUserId(userId, friendId, page, pageSize)).reverse()
-    } else if (Number.isInteger(type)) {
-        list = await findChatNotPage(userId, friendId, type)
-    } else if (type === null) {
-        list = await findChatNotPageCase1(userId, friendId)
-    }
+    const list = (await findChatByUserId(userId, friendId, page, pageSize, type)).reverse()
     return {
         code: 20000,
         data: {
