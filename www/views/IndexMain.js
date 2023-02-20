@@ -186,7 +186,7 @@ export default defineComponent({
         const chatBoxElement = ref(null) // Element
 
         async function onSendMessage() {
-            const _content = content.value
+            const _content = content.value.trim()
             const _selectUserId = selectUserId.value
             if (!_content || !_selectUserId) {
                 return
@@ -294,9 +294,11 @@ export default defineComponent({
             const input = document.createElement('input')
             input.onchange = function () {
                 sendUploadMessage(selectUserId.value, input.files[0], type)
-                nextTick(() => {
-                    chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
-                })
+                    .then(() => {
+                        nextTick(() => {
+                            chatBoxElement.value.scrollTop = chatBoxElement.value.scrollHeight
+                        })
+                    })
             }
             input.setAttribute('type', 'file')
             input.click()
